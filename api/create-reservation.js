@@ -1,12 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
+console.log('[create-reservation] Starting initialization...');
+console.log('[create-reservation] RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+console.log('[create-reservation] SUPABASE_URL exists:', !!process.env.SUPABASE_URL);
+
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY
 );
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+console.log('[create-reservation] Resend initialized successfully');
 
 const MAX_CAPACITY = parseInt(process.env.EVENT_CAPACITY) || 20;
 
@@ -291,9 +296,12 @@ ${name} 様
 
     } catch (error) {
         console.error('予約処理エラー:', error);
+        console.error('エラー詳細:', error.message);
+        console.error('スタックトレース:', error.stack);
         return res.status(500).json({
             error: 'Internal server error',
-            message: '予約処理中にエラーが発生しました。しばらくしてから再度お試しください。'
+            message: '予約処理中にエラーが発生しました。しばらくしてから再度お試しください。',
+            debug: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 }
