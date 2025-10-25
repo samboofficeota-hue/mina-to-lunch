@@ -1,0 +1,26 @@
+{
+  "name": "mina-to-lunch",
+  "version": "1.0.0",
+  "description": "みなとランチ - イベント予約管理システム",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Build complete'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "event",
+    "reservation",
+    "jamstack"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3",
+    "@sendgrid/mail": "^8.1.0"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  }
+}
+

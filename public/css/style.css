@@ -1,0 +1,433 @@
+/* ===== リセット & ベーススタイル ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #2196F3;
+    --primary-dark: #1976D2;
+    --primary-light: #BBDEFB;
+    --secondary-color: #FF6B6B;
+    --success-color: #4CAF50;
+    --error-color: #f44336;
+    --text-color: #333333;
+    --text-light: #666666;
+    --bg-color: #F5F9FF;
+    --white: #FFFFFF;
+    --border-color: #E0E0E0;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 20px 10px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+/* ===== ヘッダー ===== */
+.event-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--white);
+    text-align: center;
+    padding: 50px 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.event-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: pulse 15s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.event-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.event-subtitle-en {
+    font-size: 1.1rem;
+    font-weight: 400;
+    opacity: 0.95;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+    font-style: italic;
+}
+
+.event-subtitle {
+    font-size: 1.2rem;
+    font-weight: 400;
+    opacity: 0.95;
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== イベント情報カード ===== */
+.event-info {
+    padding: 40px 30px;
+    background: var(--bg-color);
+}
+
+.info-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: var(--shadow);
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-right: 20px;
+    margin-top: 3px;
+    min-width: 30px;
+}
+
+.info-item > div {
+    flex: 1;
+}
+
+.info-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.info-value {
+    display: block;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.info-value small {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    font-weight: 400;
+}
+
+.seats-info {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 4px 12px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* ===== 予約フォーム ===== */
+.reservation-form-section {
+    padding: 40px 30px;
+}
+
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.form-group label i {
+    color: var(--primary-color);
+    margin-right: 8px;
+}
+
+.required {
+    color: var(--error-color);
+    margin-left: 4px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"] {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.helper-text {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 6px;
+}
+
+.checkbox-group {
+    margin: 30px 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 16px;
+    background: var(--bg-color);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-label:hover {
+    background: var(--primary-light);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.checkbox-text {
+    font-size: 1rem;
+    font-weight: 500;
+    flex: 1;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--white);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+.submit-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+.submit-button:disabled {
+    background: #CCCCCC;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.submit-button i {
+    margin-right: 8px;
+}
+
+/* ===== メッセージ ===== */
+.message {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.message::before {
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 1.3rem;
+}
+
+.error-message {
+    background: #FFEBEE;
+    color: #C62828;
+    border-left: 4px solid var(--error-color);
+}
+
+.error-message::before {
+    content: '\f06a';
+}
+
+.success-message {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border-left: 4px solid var(--success-color);
+}
+
+.success-message::before {
+    content: '\f058';
+}
+
+/* ===== 予約リストリンク ===== */
+.reservation-list-link {
+    padding: 20px 30px 40px;
+    text-align: center;
+}
+
+.link-button {
+    display: inline-block;
+    padding: 12px 30px;
+    background: var(--white);
+    color: var(--primary-color);
+    text-decoration: none;
+    border: 2px solid var(--primary-color);
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.link-button:hover {
+    background: var(--primary-color);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.link-button i {
+    margin-right: 8px;
+}
+
+/* ===== フッター ===== */
+.footer {
+    background: #2C3E50;
+    color: var(--white);
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9rem;
+}
+
+/* ===== レスポンシブ対応 ===== */
+@media (max-width: 768px) {
+    body {
+        padding: 10px 5px;
+    }
+
+    .container {
+        border-radius: 15px;
+    }
+
+    .event-header {
+        padding: 40px 20px;
+    }
+
+    .event-title {
+        font-size: 2.2rem;
+    }
+
+    .event-subtitle-en {
+        font-size: 0.95rem;
+    }
+
+    .event-subtitle {
+        font-size: 1rem;
+    }
+
+    .event-info,
+    .reservation-form-section {
+        padding: 30px 20px;
+    }
+
+    .info-card {
+        padding: 20px;
+    }
+
+    .info-item i {
+        font-size: 1.3rem;
+        margin-right: 15px;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .reservation-list-link {
+        padding: 20px 20px 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .event-title {
+        font-size: 1.8rem;
+    }
+
+    .event-subtitle-en {
+        font-size: 0.85rem;
+    }
+
+    .event-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .info-item i {
+        margin-bottom: 8px;
+    }
+}

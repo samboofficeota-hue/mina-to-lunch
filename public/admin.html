@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者ダッシュボード - みなとランチ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/reservations.css">
+    <style>
+        .admin-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+        
+        .auth-section {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        
+        .action-btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .action-btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .action-btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+        
+        .action-btn-danger:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+        
+        .action-btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .action-btn-success:hover {
+            background: #388e3c;
+            transform: translateY(-2px);
+        }
+        
+        .export-section {
+            padding: 20px;
+            background: var(--bg-color);
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 認証セクション -->
+        <div id="auth-section" class="auth-section">
+            <header class="event-header admin-header">
+                <h1 class="event-title">🔐 管理者ログイン</h1>
+                <p class="event-subtitle">みなとランチ 管理画面</p>
+            </header>
+            
+            <section class="reservation-form-section">
+                <div id="auth-error" class="message error-message" style="display: none;"></div>
+                
+                <form id="auth-form">
+                    <div class="form-group">
+                        <label for="password">
+                            <i class="fas fa-key"></i> パスワード
+                        </label>
+                        <input type="password" id="password" name="password" required 
+                               placeholder="管理者パスワードを入力">
+                    </div>
+                    <button type="submit" class="submit-button">
+                        <i class="fas fa-sign-in-alt"></i> ログイン
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <!-- 管理ダッシュボード -->
+        <div id="admin-dashboard" class="hidden">
+            <header class="event-header small-header admin-header">
+                <h1 class="event-title">管理者ダッシュボード</h1>
+                <p class="event-subtitle">みなとランチ - 11月27日(木)</p>
+                <button onclick="logout()" class="link-button" style="margin-top: 15px;">
+                    <i class="fas fa-sign-out-alt"></i> ログアウト
+                </button>
+            </header>
+
+            <!-- 統計情報 -->
+            <section class="stats-section">
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <div class="stat-content">
+                            <span class="stat-label">現在の予約数</span>
+                            <span class="stat-value" id="total-reservations">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-chair"></i>
+                        <div class="stat-content">
+                            <span class="stat-label">残り席数</span>
+                            <span class="stat-value" id="remaining-seats">20</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-ban"></i>
+                        <div class="stat-content">
+                            <span class="stat-label">キャンセル数</span>
+                            <span class="stat-value" id="cancelled-count">0</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 管理アクション -->
+            <section class="reservations-section">
+                <div class="export-section">
+                    <h3 style="margin-bottom: 15px;">
+                        <i class="fas fa-download"></i> データエクスポート
+                    </h3>
+                    <div class="admin-actions">
+                        <button onclick="exportToCSV()" class="action-btn action-btn-primary">
+                            <i class="fas fa-file-csv"></i> CSV形式でダウンロード
+                        </button>
+                        <button onclick="exportToJSON()" class="action-btn action-btn-primary">
+                            <i class="fas fa-file-code"></i> JSON形式でダウンロード
+                        </button>
+                        <button onclick="printList()" class="action-btn action-btn-success">
+                            <i class="fas fa-print"></i> 印刷
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h2 class="section-title">参加予定者</h2>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">
+                            <i class="fas fa-list"></i> すべて
+                        </button>
+                        <button class="filter-btn" data-filter="confirmed">
+                            <i class="fas fa-check-circle"></i> 確定
+                        </button>
+                        <button class="filter-btn" data-filter="cancelled">
+                            <i class="fas fa-times-circle"></i> キャンセル
+                        </button>
+                    </div>
+                </div>
+
+                <div id="loading" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> 読み込み中...
+                </div>
+
+                <div id="no-reservations" class="no-data" style="display: none;">
+                    <i class="fas fa-info-circle"></i>
+                    <p>まだ予約がありません</p>
+                </div>
+
+                <div id="reservations-list" class="reservations-list"></div>
+            </section>
+
+            <!-- 戻るリンク -->
+            <section class="back-section">
+                <a href="./index.html" class="link-button">
+                    <i class="fas fa-arrow-left"></i> 予約フォームに戻る
+                </a>
+            </section>
+
+            <!-- フッター -->
+            <footer class="footer">
+                <p>&copy; 2024 みなとランチ. All rights reserved.</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- 予約詳細モーダル -->
+    <div id="detail-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">予約詳細</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="./js/admin.js"></script>
+</body>
+</html>
+

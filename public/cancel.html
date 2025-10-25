@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>予約キャンセル - みなとランチ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <header class="event-header">
+            <h1 class="event-title">予約キャンセル</h1>
+            <p class="event-subtitle">みなとランチ - 11月27日(木)</p>
+        </header>
+
+        <!-- キャンセルフォーム -->
+        <section class="reservation-form-section">
+            <h2 class="section-title">予約のキャンセル</h2>
+            
+            <div id="error-message" class="message error-message" style="display: none;"></div>
+            <div id="success-message" class="message success-message" style="display: none;"></div>
+
+            <form id="cancel-form">
+                <div class="form-group">
+                    <label for="reservation-id">
+                        <i class="fas fa-fingerprint"></i> 予約ID
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" id="reservation-id" name="reservation-id" required 
+                           placeholder="予約確認メールに記載されている予約ID">
+                    <small class="helper-text">予約確認メールに記載されている予約IDを入力してください</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i> メールアドレス
+                        <span class="required">*</span>
+                    </label>
+                    <input type="email" id="email" name="email" required 
+                           placeholder="予約時に入力したメールアドレス">
+                    <small class="helper-text">予約時に入力したメールアドレスを入力してください</small>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cancel-confirm" name="cancel-confirm" required>
+                        <span class="checkbox-text">予約をキャンセルすることを確認しました</span>
+                        <span class="required">*</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="submit-button" id="submit-button" 
+                        style="background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);">
+                    <i class="fas fa-times-circle"></i> 予約をキャンセルする
+                </button>
+            </form>
+        </section>
+
+        <!-- 戻るリンク -->
+        <section class="reservation-list-link">
+            <a href="./index.html" class="link-button">
+                <i class="fas fa-arrow-left"></i> 予約フォームに戻る
+            </a>
+        </section>
+
+        <!-- フッター -->
+        <footer class="footer">
+            <p>&copy; 2024 みなとランチ. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="./js/cancel.js"></script>
+</body>
+</html>
+

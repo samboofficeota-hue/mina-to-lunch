@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>みなとランチ - イベント予約</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+/* ===== リセット & ベーススタイル ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #2196F3;
+    --primary-dark: #1976D2;
+    --primary-light: #BBDEFB;
+    --secondary-color: #FF6B6B;
+    --success-color: #4CAF50;
+    --error-color: #f44336;
+    --text-color: #333333;
+    --text-light: #666666;
+    --bg-color: #F5F9FF;
+    --white: #FFFFFF;
+    --border-color: #E0E0E0;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 20px 10px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.event-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--white);
+    text-align: center;
+    padding: 50px 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.event-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: pulse 15s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.event-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.event-subtitle-en {
+    font-size: 1.1rem;
+    font-weight: 400;
+    opacity: 0.95;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+    font-style: italic;
+}
+
+.event-subtitle {
+    font-size: 1.2rem;
+    font-weight: 400;
+    opacity: 0.95;
+    position: relative;
+    z-index: 1;
+}
+
+.event-info {
+    padding: 40px 30px;
+    background: var(--bg-color);
+}
+
+.info-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: var(--shadow);
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-right: 20px;
+    margin-top: 3px;
+    min-width: 30px;
+}
+
+.info-item > div {
+    flex: 1;
+}
+
+.info-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.info-value {
+    display: block;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.info-value small {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    font-weight: 400;
+}
+
+.seats-info {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 4px 12px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.reservation-form-section {
+    padding: 40px 30px;
+}
+
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.form-group label i {
+    color: var(--primary-color);
+    margin-right: 8px;
+}
+
+.required {
+    color: var(--error-color);
+    margin-left: 4px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"] {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.helper-text {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 6px;
+}
+
+.checkbox-group {
+    margin: 30px 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 16px;
+    background: var(--bg-color);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-label:hover {
+    background: var(--primary-light);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.checkbox-text {
+    font-size: 1rem;
+    font-weight: 500;
+    flex: 1;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--white);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+.submit-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+.submit-button:disabled {
+    background: #CCCCCC;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.submit-button i {
+    margin-right: 8px;
+}
+
+.message {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.message::before {
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 1.3rem;
+}
+
+.error-message {
+    background: #FFEBEE;
+    color: #C62828;
+    border-left: 4px solid var(--error-color);
+}
+
+.error-message::before {
+    content: '\f06a';
+}
+
+.success-message {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border-left: 4px solid var(--success-color);
+}
+
+.success-message::before {
+    content: '\f058';
+}
+
+.reservation-list-link {
+    padding: 20px 30px 40px;
+    text-align: center;
+}
+
+.link-button {
+    display: inline-block;
+    padding: 12px 30px;
+    background: var(--white);
+    color: var(--primary-color);
+    text-decoration: none;
+    border: 2px solid var(--primary-color);
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.link-button:hover {
+    background: var(--primary-color);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+.link-button i {
+    margin-right: 8px;
+}
+
+.footer {
+    background: #2C3E50;
+    color: var(--white);
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    body { padding: 10px 5px; }
+    .container { border-radius: 15px; }
+    .event-header { padding: 40px 20px; }
+    .event-title { font-size: 2.2rem; }
+    .event-subtitle-en { font-size: 0.95rem; }
+    .event-subtitle { font-size: 1rem; }
+    .event-info, .reservation-form-section { padding: 30px 20px; }
+    .info-card { padding: 20px; }
+    .info-item i { font-size: 1.3rem; margin-right: 15px; }
+    .section-title { font-size: 1.5rem; }
+    .reservation-list-link { padding: 20px 20px 30px; }
+}
+
+@media (max-width: 480px) {
+    .event-title { font-size: 1.8rem; }
+    .event-subtitle-en { font-size: 0.85rem; }
+    .event-subtitle { font-size: 0.95rem; }
+    .info-item { flex-direction: column; align-items: flex-start; }
+    .info-item i { margin-bottom: 8px; }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <header class="event-header">
+            <h1 class="event-title">みなとランチ</h1>
+            <p class="event-subtitle-en">Mina to Lunch in Jindai</p>
+            <p class="event-subtitle">学生・企業・地域のみんなで一緒にお昼を食べながら意見交換しませんか？</p>
+        </header>
+
+        <!-- イベント情報 -->
+        <section class="event-info">
+            <div class="info-card">
+                <div class="info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div>
+                        <span class="info-label">日時</span>
+                        <span class="info-value">11月27日(木) 12:00〜13:00</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <span class="info-label">会場</span>
+                        <span class="info-value">VOYAGE<br>神奈川大学みなとみらいキャンパス 1階</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-yen-sign"></i>
+                    <div>
+                        <span class="info-label">会費</span>
+                        <span class="info-value">1,000円（選べるランチ付き）<br><small>※学生はランチを自分で用意</small></span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <span class="info-label">定員</span>
+                        <span class="info-value">20名 <span id="remaining-seats" class="seats-info"></span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 予約フォーム -->
+        <section class="reservation-form-section">
+            <h2 class="section-title">席を予約する</h2>
+            
+            <div id="error-message" class="message error-message" style="display: none;"></div>
+            <div id="success-message" class="message success-message" style="display: none;"></div>
+
+            <form id="reservation-form">
+                <div class="form-group">
+                    <label for="name">
+                        <i class="fas fa-user"></i> 名前（ニックネーム）
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" id="name" name="name" required placeholder="例: 山田太郎">
+                </div>
+
+                <div class="form-group">
+                    <label for="affiliation">
+                        <i class="fas fa-building"></i> 所属
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" id="affiliation" name="affiliation" required placeholder="例: 〇〇大学 / 〇〇株式会社">
+                </div>
+
+                <div class="form-group">
+                    <label for="favorite">
+                        <i class="fas fa-heart"></i> 今の推し
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text" id="favorite" name="favorite" required placeholder="例: 最近ハマっていることや好きなもの">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i> メールアドレス
+                        <span class="required">*</span>
+                    </label>
+                    <input type="email" id="email" name="email" required placeholder="例: example@email.com">
+                    <small class="helper-text">予約確認メールをお送りします。キャンセルの際はメールに返信してください。</small>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="attend-confirm" name="attend-confirm" required>
+                        <span class="checkbox-text">上記の日時に出席することを確認しました</span>
+                        <span class="required">*</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="submit-button" id="submit-button">
+                    <i class="fas fa-check-circle"></i> 予約を確定する
+                </button>
+            </form>
+        </section>
+
+        <!-- 予約済みリストへのリンク -->
+        <section class="reservation-list-link">
+            <a href="./reservations.html" class="link-button">
+                <i class="fas fa-list"></i> 予約一覧を見る
+            </a>
+            <a href="./admin.html" class="link-button" style="margin-left: 10px; border-color: #2c3e50; color: #2c3e50;">
+                <i class="fas fa-user-shield"></i> 管理者
+            </a>
+        </section>
+
+        <!-- フッター -->
+        <footer class="footer">
+            <p>&copy; 2024 みなとランチ. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+// ===== 定数定義 =====
+const MAX_CAPACITY = 20;
+const TABLE_NAME = 'reservations';
+
+// ===== DOM要素 =====
+const form = document.getElementById('reservation-form');
+const submitButton = document.getElementById('submit-button');
+const errorMessage = document.getElementById('error-message');
+const successMessage = document.getElementById('success-message');
+const remainingSeatsElement = document.getElementById('remaining-seats');
+
+// ===== 初期化 =====
+document.addEventListener('DOMContentLoaded', () => {
+    loadRemainingSeats();
+    setupFormValidation();
+});
+
+// ===== 残席数の取得と表示 =====
+async function loadRemainingSeats() {
+    try {
+        const response = await fetch(`tables/${TABLE_NAME}?limit=100`);
+        const result = await response.json();
+        
+        const confirmedReservations = result.data.filter(reservation => 
+            reservation.status === 'confirmed'
+        );
+        
+        const remaining = MAX_CAPACITY - confirmedReservations.length;
+        
+        if (remainingSeatsElement) {
+            if (remaining > 0) {
+                remainingSeatsElement.textContent = `（残り${remaining}席）`;
+                remainingSeatsElement.className = 'seats-info';
+            } else {
+                remainingSeatsElement.textContent = '（満席）';
+                remainingSeatsElement.className = 'seats-info seats-full';
+                remainingSeatsElement.style.background = '#FFCDD2';
+                remainingSeatsElement.style.color = '#C62828';
+                disableForm('申し訳ございません。定員に達したため、現在予約を受け付けておりません。');
+            }
+        }
+        
+        return remaining;
+    } catch (error) {
+        console.error('残席数の取得に失敗しました:', error);
+        if (remainingSeatsElement) {
+            remainingSeatsElement.textContent = '';
+        }
+        return MAX_CAPACITY;
+    }
+}
+
+function setupFormValidation() {
+    const inputs = form.querySelectorAll('input[required]');
+    inputs.forEach(input => {
+        input.addEventListener('blur', () => validateField(input));
+        input.addEventListener('input', () => {
+            if (input.classList.contains('error')) {
+                validateField(input);
+            }
+        });
+    });
+}
+
+function validateField(field) {
+    const value = field.value.trim();
+    let isValid = true;
+    let errorMsg = '';
+
+    if (field.hasAttribute('required') && !value) {
+        isValid = false;
+        errorMsg = 'この項目は必須です';
+    } else if (field.type === 'email' && value) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+            isValid = false;
+            errorMsg = '有効なメールアドレスを入力してください';
+        }
+    }
+
+    if (!isValid) {
+        field.classList.add('error');
+        field.style.borderColor = '#f44336';
+        showFieldError(field, errorMsg);
+    } else {
+        field.classList.remove('error');
+        field.style.borderColor = '';
+        removeFieldError(field);
+    }
+
+    return isValid;
+}
+
+function showFieldError(field, message) {
+    removeFieldError(field);
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'field-error';
+    errorDiv.style.color = '#f44336';
+    errorDiv.style.fontSize = '0.85rem';
+    errorDiv.style.marginTop = '4px';
+    errorDiv.textContent = message;
+    field.parentNode.appendChild(errorDiv);
+}
+
+function removeFieldError(field) {
+    const existingError = field.parentNode.querySelector('.field-error');
+    if (existingError) {
+        existingError.remove();
+    }
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    hideMessages();
+    
+    const inputs = form.querySelectorAll('input[required]');
+    let isFormValid = true;
+    
+    inputs.forEach(input => {
+        if (!validateField(input)) {
+            isFormValid = false;
+        }
+    });
+    
+    if (!isFormValid) {
+        showError('入力内容に誤りがあります。赤く表示された項目を確認してください。');
+        return;
+    }
+    
+    const attendConfirm = document.getElementById('attend-confirm');
+    if (!attendConfirm.checked) {
+        showError('出席確認のチェックボックスにチェックを入れてください。');
+        return;
+    }
+    
+    const remaining = await loadRemainingSeats();
+    if (remaining <= 0) {
+        showError('申し訳ございません。定員に達したため予約できません。');
+        return;
+    }
+    
+    const formData = {
+        name: document.getElementById('name').value.trim(),
+        affiliation: document.getElementById('affiliation').value.trim(),
+        favorite: document.getElementById('favorite').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        status: 'confirmed',
+        reservation_date: new Date().toISOString()
+    };
+    
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 送信中...';
+    
+    try {
+        const response = await fetch(`tables/${TABLE_NAME}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('予約の登録に失敗しました');
+        }
+        
+        const result = await response.json();
+        
+        showSuccess(`予約が完了しました！<br>
+            <strong>${formData.name}</strong> 様、ご予約ありがとうございます。<br>
+            確認メールを <strong>${formData.email}</strong> 宛に送信いたしました。<br>
+            <small>※実際のメール送信機能は、本番環境で実装されます。</small>`);
+        
+        form.reset();
+        await loadRemainingSeats();
+        
+        setTimeout(() => {
+            window.location.href = 'reservations.html';
+        }, 3000);
+        
+    } catch (error) {
+        console.error('予約エラー:', error);
+        showError('予約の登録中にエラーが発生しました。もう一度お試しください。');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-check-circle"></i> 予約を確定する';
+    }
+});
+
+function showError(message) {
+    errorMessage.innerHTML = message;
+    errorMessage.style.display = 'flex';
+    successMessage.style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showSuccess(message) {
+    successMessage.innerHTML = message;
+    successMessage.style.display = 'flex';
+    errorMessage.style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function hideMessages() {
+    errorMessage.style.display = 'none';
+    successMessage.style.display = 'none';
+}
+
+function disableForm(message) {
+    const inputs = form.querySelectorAll('input');
+    inputs.forEach(input => input.disabled = true);
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-times-circle"></i> 予約受付終了';
+    showError(message);
+}
+    </script>
+</body>
+</html>
