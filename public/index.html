@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>みなとランチ - イベント予約</title>
+    <link rel="icon" type="image/png" href="./images/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <style>
@@ -71,6 +72,18 @@ body {
 @keyframes pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.1); }
+}
+
+.event-logo {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    object-fit: cover;
 }
 
 .event-title {
@@ -390,6 +403,7 @@ body {
     <div class="container">
         <!-- ヘッダー -->
         <header class="event-header">
+            <img src="./images/logo.png" alt="みなとランチロゴ" class="event-logo">
             <h1 class="event-title">みなとランチ</h1>
             <p class="event-subtitle-en">Mina to Lunch in Jindai</p>
             <p class="event-subtitle">学生・企業・地域のみんなで一緒にお昼を食べながら意見交換しませんか？</p>
@@ -496,7 +510,7 @@ body {
 
         <!-- フッター -->
         <footer class="footer">
-            <p>&copy; 2024 みなとランチ. All rights reserved.</p>
+            <p>&copy; みなとランチプロジェクト（神奈川大学 社会連携センター）</p>
         </footer>
     </div>
 
