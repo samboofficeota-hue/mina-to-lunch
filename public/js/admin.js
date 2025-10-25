@@ -29,21 +29,49 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ===== 認証処理 =====
-authForm.addEventListener('submit', (e) => {
+authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const password = document.getElementById('password').value;
     
-    // 簡易認証（本番環境では適切な認証システムを使用）
-    // 環境変数 ADMIN_PASSWORD と照合するAPIを作成することも可能
-    const validPasswords = ['admin123', 'minatoadmin2024', 'voyage2025'];
+    // エラーメッセージをクリア
+    authError.style.display = 'none';
     
-    if (validPasswords.includes(password)) {
-        sessionStorage.setItem('admin_authenticated', 'true');
-        showDashboard();
-    } else {
-        authError.textContent = 'パスワードが正しくありません';
+    // ローディング表示
+    const submitButton = authForm.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 認証中...';
+    
+    try {
+        // サーバーサイドで認証
+        const response = await fetch('/api/verify-admin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // 認証成功
+            sessionStorage.setItem('admin_authenticated', 'true');
+            showDashboard();
+        } else {
+            // 認証失敗
+            authError.textContent = result.message || 'パスワードが正しくありません';
+            authError.style.display = 'flex';
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonText;
+        }
+    } catch (error) {
+        console.error('認証エラー:', error);
+        authError.textContent = '認証処理に失敗しました。もう一度お試しください。';
         authError.style.display = 'flex';
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonText;
     }
 });
 
