@@ -1,12 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
-import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY
 );
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(req, res) {
     // CORSヘッダー設定
@@ -89,11 +89,8 @@ export default async function handler(req, res) {
         // キャンセル通知メールを送信
         try {
             const emailContent = {
+                from: `${process.env.RESEND_FROM_NAME || 'みなとランチ'} <${process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com'}>`,
                 to: email,
-                from: {
-                    email: process.env.SENDGRID_FROM_EMAIL || 'noreply@yourdomain.com',
-                    name: process.env.SENDGRID_FROM_NAME || 'みなとランチ'
-                },
                 subject: '【みなとランチ】予約キャンセル完了',
                 html: `
 <!DOCTYPE html>
@@ -196,7 +193,7 @@ ${reservation.name} 様
                 `
             };
 
-            await sgMail.send(emailContent);
+            await resend.emails.send(emailContent);
             
         } catch (emailError) {
             // メール送信失敗してもエラーログに記録するのみ
