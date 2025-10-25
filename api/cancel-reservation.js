@@ -89,7 +89,7 @@ export default async function handler(req, res) {
         // キャンセル通知メールを送信
         try {
             const emailContent = {
-                from: `${process.env.RESEND_FROM_NAME || 'みなとランチ'} <${process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com'}>`,
+                from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
                 to: email,
                 subject: '【みなとランチ】予約キャンセル完了',
                 html: `

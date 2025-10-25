@@ -94,7 +94,7 @@ export default async function handler(req, res) {
         // 確認メールを送信
         try {
             const emailContent = {
-                from: `${process.env.RESEND_FROM_NAME || 'みなとランチ'} <${process.env.RESEND_FROM_EMAIL || 'noreply@yourdomain.com'}>`,
+                from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
                 to: email,
                 subject: '【みなとランチ】予約確認 - 11月27日(木)',
                 html: `
