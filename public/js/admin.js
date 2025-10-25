@@ -36,7 +36,7 @@ authForm.addEventListener('submit', (e) => {
     
     // 簡易認証（本番環境では適切な認証システムを使用）
     // 環境変数 ADMIN_PASSWORD と照合するAPIを作成することも可能
-    const validPasswords = ['admin123', 'minatoadmin2024']; // デモ用
+    const validPasswords = ['admin123', 'minatoadmin2024', 'voyage2025'];
     
     if (validPasswords.includes(password)) {
         sessionStorage.setItem('admin_authenticated', 'true');
