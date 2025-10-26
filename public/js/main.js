@@ -249,21 +249,35 @@ form.addEventListener('submit', async (e) => {
         }
         
         // 成功メッセージ表示
-        const lineConnected = sessionStorage.getItem('line_user_id');
+        const reservationId = result.reservation?.id || '';
+        
         let successMsg = `🎉 予約が完了しました！<br>
             <strong>${formData.name}</strong> 様、ご予約ありがとうございます。<br><br>`;
         
-        if (lineConnected) {
-            successMsg += `✅ LINEに予約確認通知を送信しました。<br>LINEアプリでご確認ください。`;
-        } else {
-            successMsg += `📱 <strong>重要：</strong>予約確認通知を受け取るには、以下の手順を行ってください：<br>
-                <ol style="text-align: left; margin: 15px 0; padding-left: 20px;">
-                    <li>LINE公式アカウント「@082muhmk」を友だち追加</li>
-                    <li>トーク画面で「<strong>予約確認</strong>」と送信</li>
-                    <li>予約ID: <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">${result.reservation?.id || 'XXXXX'}</code></li>
+        successMsg += `📱 <strong>次のステップ：LINE通知の設定</strong><br>
+            予約確認通知をLINEで受け取るには、以下の手順を行ってください：<br>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #06C755;">
+                <p style="margin: 0 0 10px 0; font-weight: bold; color: #06C755;">
+                    <i class="fab fa-line"></i> LINE通知を受け取る方法
+                </p>
+                <ol style="text-align: left; margin: 10px 0; padding-left: 20px; line-height: 1.8;">
+                    <li><strong>LINE公式アカウント「@082muhmk」を友だち追加</strong></li>
+                    <li>トーク画面で、以下の<strong>予約ID</strong>をコピーして送信</li>
                 </ol>
-                これで通知が受け取れるようになります。`;
-        }
+                <div style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0; text-align: center;">
+                    <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">あなたの予約ID</p>
+                    <p style="margin: 0; font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #333; word-break: break-all;">
+                        ${reservationId}
+                    </p>
+                    <button onclick="navigator.clipboard.writeText('${reservationId}').then(() => alert('予約IDをコピーしました！LINEに貼り付けてください。'))" 
+                            style="margin-top: 10px; padding: 8px 20px; background: #06C755; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                        <i class="fas fa-copy"></i> 予約IDをコピー
+                    </button>
+                </div>
+                <p style="margin: 10px 0 0 0; font-size: 0.9rem; color: #666;">
+                    ✅ 予約IDを送信すると、即座に予約確認通知が届きます
+                </p>
+            </div>`;
         
         showSuccess(successMsg);
         

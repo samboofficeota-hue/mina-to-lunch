@@ -79,10 +79,70 @@ async function handleEvent(event) {
 
     // メッセージイベント
     if (event.type === 'message' && event.message.type === 'text') {
-        const userMessage = event.message.text.toLowerCase();
+        const userMessage = event.message.text.trim();
+        const userMessageLower = userMessage.toLowerCase();
+
+        // 予約IDのパターンマッチ（UUID形式）
+        const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        
+        if (uuidPattern.test(userMessage)) {
+            // 予約IDが送信された場合
+            const reservationId = userMessage;
+            
+            // 予約を検索
+            const { data: reservation, error: searchError } = await supabase
+                .from('reservations')
+                .select('*')
+                .eq('id', reservationId)
+                .single();
+            
+            if (searchError || !reservation) {
+                await lineClient.replyMessage(event.replyToken, {
+                    type: 'text',
+                    text: '予約が見つかりませんでした。\n\n予約IDをもう一度確認してください。'
+                });
+                return { success: false, type: 'message', action: 'reservation_not_found' };
+            }
+            
+            // 既にキャンセル済み
+            if (reservation.status === 'cancelled') {
+                await lineClient.replyMessage(event.replyToken, {
+                    type: 'text',
+                    text: `この予約はキャンセル済みです。\n\n【予約情報】\nお名前: ${reservation.name}\nステータス: キャンセル済み`
+                });
+                return { success: true, type: 'message', action: 'already_cancelled' };
+            }
+            
+            // LINE User IDを保存
+            const { error: updateError } = await supabase
+                .from('reservations')
+                .update({ line_user_id: userId })
+                .eq('id', reservationId);
+            
+            if (updateError) {
+                console.error('LINE User ID保存エラー:', updateError);
+                await lineClient.replyMessage(event.replyToken, {
+                    type: 'text',
+                    text: 'エラーが発生しました。もう一度お試しください。'
+                });
+                return { success: false, type: 'message', action: 'update_error' };
+            }
+            
+            // 予約確認通知を送信
+            const { sendLineNotification } = await import('./send-line-notification.js');
+            await sendLineNotification(userId, 'reservation_confirmed', {
+                id: reservation.id,
+                name: reservation.name,
+                affiliation: reservation.affiliation,
+                favorite: reservation.favorite,
+                email: reservation.email
+            });
+            
+            return { success: true, type: 'message', action: 'reservation_linked' };
+        }
 
         // 「予約」キーワードに反応
-        if (userMessage.includes('予約') || userMessage.includes('よやく')) {
+        if (userMessageLower.includes('予約') || userMessageLower.includes('よやく')) {
             await lineClient.replyMessage(event.replyToken, {
                 type: 'text',
                 text: '予約は以下のURLからお願いします！\n\n' + 
@@ -94,7 +154,7 @@ async function handleEvent(event) {
         }
 
         // 「キャンセル」キーワードに反応
-        if (userMessage.includes('キャンセル') || userMessage.includes('きゃんせる')) {
+        if (userMessageLower.includes('キャンセル') || userMessageLower.includes('きゃんせる')) {
             await lineClient.replyMessage(event.replyToken, {
                 type: 'text',
                 text: 'キャンセルは以下のURLからお願いします！\n\n' + 
@@ -106,7 +166,7 @@ async function handleEvent(event) {
         }
 
         // 「確認」キーワードに反応
-        if (userMessage.includes('確認') || userMessage.includes('かくにん')) {
+        if (userMessageLower.includes('確認') || userMessageLower.includes('かくにん')) {
             // ユーザーIDから予約を検索
             const { data: reservations, error } = await supabase
                 .from('reservations')

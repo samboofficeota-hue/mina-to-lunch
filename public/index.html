@@ -496,21 +496,18 @@ body {
             <div id="line-connect-section" class="line-connect-box">
                 <div class="line-connect-header">
                     <i class="fab fa-line" style="font-size: 2rem; color: #06C755;"></i>
-                    <h3 style="margin: 10px 0; color: #333;">LINE通知（必須）</h3>
-                    <p style="color: #666; font-size: 0.9rem; margin: 0;">
-                        予約確認通知をLINEで受け取ります。<br>
-                        <strong>予約前に友だち追加をお願いします</strong>
+                    <h3 style="margin: 10px 0; color: #333;">📱 LINE通知について</h3>
+                    <p style="color: #666; font-size: 0.95rem; margin: 10px 0; line-height: 1.6;">
+                        予約完了後、<strong>LINE公式アカウント（@082muhmk）</strong>を友だち追加し、<br>
+                        発行される<strong>予約ID</strong>を送信すると、LINE通知が届きます。
                     </p>
                 </div>
-                <button type="button" id="line-connect-button" class="line-button">
+                <button type="button" id="line-connect-button" class="line-button" onclick="window.open('https://line.me/R/ti/p/@082muhmk', '_blank')">
                     <i class="fab fa-line"></i> LINE公式アカウントを友だち追加
                 </button>
-                <div id="line-status" style="display: none; margin-top: 10px; padding: 10px; background: #E8F5E9; border-radius: 8px; color: #2E7D32;">
-                    <i class="fas fa-check-circle"></i> LINE連携済み - 予約通知が届きます
-                </div>
-                <div id="line-not-connected-warning" style="margin-top: 10px; padding: 12px; background: #FFF3CD; border-radius: 8px; color: #856404; font-size: 0.9rem;">
-                    <i class="fas fa-exclamation-triangle"></i> 
-                    <strong>注意:</strong> 友だち追加していない場合、予約完了後にLINEで予約IDをお送りください
+                <div style="margin-top: 15px; padding: 15px; background: #E3F2FD; border-radius: 8px; font-size: 0.9rem; color: #1565C0;">
+                    <strong>💡 通知の流れ：</strong><br>
+                    ① 予約フォーム送信 → ② 予約ID発行 → ③ LINEで予約ID送信 → ④ 通知受信 ✅
                 </div>
             </div>
             
