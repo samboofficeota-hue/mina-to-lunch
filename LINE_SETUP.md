@@ -77,6 +77,19 @@ https://mina-to-lunch.vercel.app/api/line-login-callback
 
 4. 「更新」ボタンをクリック
 
+### Step 3.6: Channel ID の取得
+
+1. 「LINEログイン設定」タブの上部
+2. 「Channel ID」をコピー（数字のみの文字列）
+
+```
+例: 1234567890
+```
+
+このIDはLINE Login用のクライアントIDとして使用します。
+
+---
+
 ---
 
 ### Step 4: Channel Access Token の取得
@@ -147,7 +160,7 @@ https://mina-to-lunch.vercel.app/api/line-webhook
 |--------|---|------|
 | `LINE_CHANNEL_SECRET` | Step 5で取得したChannel Secret | LINEチャネルシークレット |
 | `LINE_CHANNEL_ACCESS_TOKEN` | Step 4で取得したChannel Access Token | LINE APIアクセストークン |
-| `LINE_CHANNEL_ID` | Step 3で取得したChannel ID | LINE Login用チャネルID |
+| `LINE_CHANNEL_ID` | Step 3.6で取得したChannel ID | LINE Login用チャネルID |
 | `LINE_LOGIN_REDIRECT_URI` | `https://YOUR_DOMAIN.vercel.app/api/line-login-callback` | LINE LoginコールバックURL |
 
 **設定方法**:
@@ -157,7 +170,6 @@ Value: 1234567890abcdef1234567890abcdef
 
 Name: LINE_CHANNEL_ACCESS_TOKEN
 Value: eyJhbGciOiJIUzI1NiJ9...
-
 
 Name: LINE_CHANNEL_ID
 Value: 1234567890
@@ -279,7 +291,22 @@ LINEで以下のメッセージを送信してみる：
 
 ## 🔍 トラブルシューティング
 
-### 1. LINE通知が届かない
+### 1. LINEログインができない
+
+**原因と対処法**:
+
+- ❌ **LINE_CHANNEL_ID環境変数が設定されていない**
+  - Vercelの環境変数で`LINE_CHANNEL_ID`が正しく設定されているか確認
+  - LINE Developers Consoleの「LINEログイン設定」からChannel IDをコピー
+
+- ❌ **LINE_LOGIN_REDIRECT_URIが間違っている**
+  - コールバックURLが`https://YOUR_DOMAIN.vercel.app/api/line-login-callback`になっているか確認
+  - LINE Developers Consoleの「LINEログイン設定」でコールバックURLが正しく設定されているか確認
+
+- ❌ **LINE Login設定が無効**
+  - LINE Developers Consoleで「ウェブアプリでLINEログインを利用する」がONになっているか確認
+
+### 2. LINE通知が届かない
 
 **原因と対処法**:
 

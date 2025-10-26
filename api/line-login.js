@@ -15,6 +15,14 @@ export async function generateLineLoginUrl() {
     const redirectUri = process.env.LINE_LOGIN_REDIRECT_URI || 
         `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/line-login-callback`;
     
+    // 環境変数のチェック
+    if (!channelId) {
+        throw new Error('LINE_CHANNEL_ID環境変数が設定されていません');
+    }
+    
+    console.log('[line-login] Channel ID:', channelId);
+    console.log('[line-login] Redirect URI:', redirectUri);
+    
     const state = generateRandomString(32);
     const nonce = generateRandomString(32);
     
@@ -48,6 +56,20 @@ export async function generateLineLoginUrl() {
  */
 export async function handleLineLoginCallback(code, state, nonce) {
     try {
+        // 環境変数のチェック
+        if (!process.env.LINE_CHANNEL_ID) {
+            throw new Error('LINE_CHANNEL_ID環境変数が設定されていません');
+        }
+        if (!process.env.LINE_CHANNEL_SECRET) {
+            throw new Error('LINE_CHANNEL_SECRET環境変数が設定されていません');
+        }
+        
+        const redirectUri = process.env.LINE_LOGIN_REDIRECT_URI || 
+            `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/line-login-callback`;
+        
+        console.log('[line-login-callback] Channel ID:', process.env.LINE_CHANNEL_ID);
+        console.log('[line-login-callback] Redirect URI:', redirectUri);
+        
         // アクセストークンを取得
         const tokenResponse = await fetch('https://api.line.me/oauth2/v2.1/token', {
             method: 'POST',
@@ -57,8 +79,7 @@ export async function handleLineLoginCallback(code, state, nonce) {
             body: new URLSearchParams({
                 grant_type: 'authorization_code',
                 code: code,
-                redirect_uri: process.env.LINE_LOGIN_REDIRECT_URI || 
-                    `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/line-login-callback`,
+                redirect_uri: redirectUri,
                 client_id: process.env.LINE_CHANNEL_ID,
                 client_secret: process.env.LINE_CHANNEL_SECRET
             })
