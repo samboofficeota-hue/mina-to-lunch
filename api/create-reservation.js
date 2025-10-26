@@ -1,9 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { sendLineNotification } from './send-line-notification.js';
 
 console.log('[create-reservation] Starting initialization...');
 console.log('[create-reservation] RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
 console.log('[create-reservation] SUPABASE_URL exists:', !!process.env.SUPABASE_URL);
+console.log('[create-reservation] LINE_CHANNEL_ACCESS_TOKEN exists:', !!process.env.LINE_CHANNEL_ACCESS_TOKEN);
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -35,7 +37,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { name, affiliation, favorite, email } = req.body;
+        const { name, affiliation, favorite, email, lineUserId } = req.body;
 
         // 入力バリデーション
         if (!name || !affiliation || !favorite || !email) {
@@ -73,22 +75,48 @@ export default async function handler(req, res) {
         }
 
         // 予約データを保存
+        const reservationData = {
+            name: name.trim(),
+            affiliation: affiliation.trim(),
+            favorite: favorite.trim(),
+            email: email.trim().toLowerCase(),
+            status: 'confirmed',
+            reservation_date: new Date().toISOString()
+        };
+
+        // LINE User IDがあれば追加
+        if (lineUserId) {
+            reservationData.line_user_id = lineUserId;
+            console.log('[create-reservation] LINE User ID:', lineUserId);
+        }
+
         const { data: reservation, error: insertError } = await supabase
             .from('reservations')
-            .insert([{
-                name: name.trim(),
-                affiliation: affiliation.trim(),
-                favorite: favorite.trim(),
-                email: email.trim().toLowerCase(),
-                status: 'confirmed',
-                reservation_date: new Date().toISOString()
-            }])
+            .insert([reservationData])
             .select()
             .single();
 
         if (insertError) {
             console.error('予約登録エラー:', insertError);
             throw new Error('予約の登録に失敗しました');
+        }
+
+        // LINE通知を送信（LINE User IDがある場合）
+        if (lineUserId) {
+            try {
+                console.log('[create-reservation] LINE通知を送信中...');
+                await sendLineNotification(lineUserId, 'reservation_confirmed', {
+                    id: reservation.id,
+                    name: reservation.name,
+                    affiliation: reservation.affiliation,
+                    favorite: reservation.favorite,
+                    email: reservation.email
+                });
+                console.log('[create-reservation] LINE通知送信成功');
+            } catch (lineError) {
+                console.error('[create-reservation] LINE通知送信エラー:', lineError);
+                // LINE送信失敗してもエラーにしない
+            }
         }
 
         // 確認メールを送信

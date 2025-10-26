@@ -8,7 +8,8 @@
 - **フロントエンド**: 静的HTML/CSS/JavaScript
 - **バックエンド**: Vercel Serverless Functions
 - **データベース**: Supabase (PostgreSQL)
-- **メール送信**: SendGrid
+- **メール送信**: Resend
+- **LINE通知**: LINE Messaging API 🆕
 - **ホスティング**: Vercel
 
 ---
@@ -54,7 +55,9 @@ vercel dev
   - リアルタイムエラー表示
 - ✅ 予約データの送信（API経由）
 - ✅ 定員管理（20名上限）
-- ✅ **予約確認メールの自動送信** 🆕
+- ✅ **予約確認メールの自動送信**
+- ✅ **LINE通知機能（予約確認・キャンセル通知）** 🆕
+- ✅ LINE公式アカウント友だち追加連携 🆕
 - ✅ 予約完了後の自動遷移
 
 ### 2. 予約一覧ページ（reservations.html）
@@ -64,13 +67,14 @@ vercel dev
 - ✅ 予約詳細モーダル表示
 - ✅ レスポンシブデザイン
 
-### 3. キャンセル機能（cancel.html）🆕
+### 3. キャンセル機能（cancel.html）
 - ✅ 予約IDとメールアドレスによる認証
 - ✅ キャンセル処理
 - ✅ **キャンセル完了メールの自動送信**
+- ✅ **LINE通知（キャンセル完了）** 🆕
 - ✅ URL パラメータからの自動入力
 
-### 4. 管理者ダッシュボード（admin.html）🆕
+### 4. 管理者ダッシュボード（admin.html）
 - ✅ パスワード認証
 - ✅ 予約一覧の表示（確定/キャンセル別）
 - ✅ 統計情報（予約数、残席数、キャンセル数）
@@ -79,12 +83,24 @@ vercel dev
 - ✅ 印刷機能
 - ✅ 予約詳細モーダル
 
-### 5. デザイン
+### 5. LINEチャットボット機能 🆕
+- ✅ LINE公式アカウント友だち追加対応
+- ✅ ウェルカムメッセージ自動送信
+- ✅ 予約確認通知（Flex Message）
+- ✅ キャンセル完了通知
+- ✅ チャットコマンド対応
+  - 「予約」→ 予約ページURLを返信
+  - 「確認」→ 予約情報を表示
+  - 「キャンセル」→ キャンセルページURLを返信
+- ✅ 自動応答ヘルプメッセージ
+
+### 6. デザイン
 - ✅ モダンで美しいグラデーションデザイン
 - ✅ Font Awesome アイコン統合
 - ✅ スマートフォン対応（レスポンシブ）
 - ✅ アニメーション効果
 - ✅ 直感的なUI/UX
+- ✅ LINE連携UIコンポーネント 🆕
 
 ---
 
@@ -105,14 +121,18 @@ mina-to-lunch/
 │       ├── reservations.js      # 予約一覧ロジック
 │       ├── cancel.js            # キャンセルロジック 🆕
 │       └── admin.js             # 管理者ロジック 🆕
-├── api/                           # サーバーレス関数 🆕
+├── api/                           # サーバーレス関数
 │   ├── create-reservation.js    # 予約作成API
 │   ├── get-reservations.js      # 予約一覧取得API
-│   └── cancel-reservation.js    # キャンセルAPI
-├── package.json                   # 依存関係 🆕
-├── vercel.json                    # Vercel設定 🆕
-├── .gitignore                     # Git除外設定 🆕
-├── DEPLOYMENT.md                  # デプロイ手順 🆕
+│   ├── cancel-reservation.js    # キャンセルAPI
+│   ├── verify-admin.js          # 管理者認証API
+│   ├── line-webhook.js          # LINE Webhook API 🆕
+│   └── send-line-notification.js # LINE通知送信ヘルパー 🆕
+├── package.json                   # 依存関係
+├── vercel.json                    # Vercel設定
+├── .gitignore                     # Git除外設定
+├── DEPLOYMENT.md                  # デプロイ手順
+├── LINE_SETUP.md                  # LINE通知セットアップガイド 🆕
 └── README.md                      # プロジェクト説明書
 ```
 
@@ -187,13 +207,37 @@ mina-to-lunch/
 ```
 
 #### POST /api/cancel-reservation
-予約をキャンセルし、通知メールを送信
+予約をキャンセルし、通知メール・LINE通知を送信
 
 **リクエスト**:
 ```json
 {
   "reservationId": "uuid",
   "email": "yamada@example.com"
+}
+```
+
+#### POST /api/line-webhook 🆕
+LINE Messaging APIのWebhook
+
+**説明**: LINEからのイベント（友だち追加、メッセージ受信など）を受信して処理
+
+**処理内容**:
+- 友だち追加 → ウェルカムメッセージ送信
+- メッセージ受信 → コマンドに応じて返信
+  - 「予約」→ 予約URL
+  - 「確認」→ 予約情報
+  - 「キャンセル」→ キャンセルURL
+
+#### POST /api/send-line-notification 🆕
+LINE通知を送信（内部API）
+
+**リクエスト**:
+```json
+{
+  "userId": "U1234567890abcdef",
+  "type": "reservation_confirmed",
+  "data": { ... }
 }
 ```
 
@@ -210,32 +254,54 @@ mina-to-lunch/
 | affiliation | text | 所属（大学名/会社名など） |
 | favorite | text | 今の推し（好きなもの） |
 | email | text | メールアドレス |
+| line_user_id | text | LINE User ID（オプション） 🆕 |
 | status | text | ステータス（confirmed/cancelled） |
 | reservation_date | datetime | 予約日時 |
 | created_at | datetime | 作成日時（自動生成） |
 | updated_at | datetime | 更新日時（自動生成） |
+| cancelled_at | datetime | キャンセル日時（キャンセル時のみ） |
 
 ---
 
 ## 🚀 デプロイ方法
 
-### 推奨: Vercel + Supabase + SendGrid
+### 推奨: Vercel + Supabase + Resend + LINE
 
 詳細な手順は **[DEPLOYMENT.md](./DEPLOYMENT.md)** を参照してください。
 
 **簡易手順**:
 
 1. **Supabase**: データベースとテーブルを作成
-2. **SendGrid**: APIキーを取得、送信者認証
-3. **GitHub**: リポジトリにプッシュ
-4. **Vercel**: プロジェクトをインポート、環境変数を設定
-5. **デプロイ**: 自動デプロイ完了！
+2. **Resend**: APIキーを取得、送信者認証
+3. **LINE**: 公式アカウント作成、Messaging API設定 🆕
+   - 詳細は **[LINE_SETUP.md](./LINE_SETUP.md)** を参照
+4. **GitHub**: リポジトリにプッシュ
+5. **Vercel**: プロジェクトをインポート、環境変数を設定
+6. **デプロイ**: 自動デプロイ完了！
+
+### 環境変数
+
+以下の環境変数をVercelに設定してください：
+
+| 変数名 | 説明 | 必須 |
+|--------|------|------|
+| `SUPABASE_URL` | SupabaseプロジェクトURL | ✅ |
+| `SUPABASE_SERVICE_KEY` | Supabaseサービスキー | ✅ |
+| `RESEND_API_KEY` | Resend APIキー | ✅ |
+| `RESEND_FROM_EMAIL` | 送信元メールアドレス | ✅ |
+| `ADMIN_PASSWORD` | 管理者パスワード | ✅ |
+| `EVENT_CAPACITY` | イベント定員（デフォルト: 20） | ⚪ |
+| `LINE_CHANNEL_SECRET` | LINEチャネルシークレット 🆕 | ⚪ |
+| `LINE_CHANNEL_ACCESS_TOKEN` | LINEアクセストークン 🆕 | ⚪ |
+| `LINE_BOT_BASIC_ID` | LINE Bot Basic ID（@付き）🆕 | ⚪ |
+
+⚪ = オプション（LINE通知を使用する場合は必須）
 
 ### その他の方法
 
-- Netlify + Supabase + SendGrid
-- Cloudflare Pages + Supabase + SendGrid
-- AWS Amplify + DynamoDB + SES
+- Netlify + Supabase + Resend + LINE
+- Cloudflare Pages + Supabase + Resend + LINE
+- AWS Amplify + DynamoDB + SES + LINE
 
 ※ サーバーレス関数とデータベースが必要です
 
@@ -256,26 +322,34 @@ mina-to-lunch/
 
 ### 1. 高度な管理機能
 - ⬜ 予約の承認/却下フロー
-- ⬜ 参加者へのメール一斉送信
-- ⬜ QRコード受付システム
-- ⬜ リマインドメール自動送信
+- ⬜ 参加者へのメール・LINE一斉送信
+- ⬜ QRコード受付システム（LINE連携）
+- ⬜ リマインド通知自動送信（メール・LINE）
 
-### 2. 決済機能
+### 2. LINE機能強化 🆕
+- ✅ LINE通知機能（実装済み）
+- ✅ チャットボット基本機能（実装済み）
+- ⬜ リッチメニュー詳細カスタマイズ
+- ⬜ イベント前日リマインダー自動送信
+- ⬜ QRコード受付システム（LINE経由）
+- ⬜ イベント後フィードバック収集（LINE）
+
+### 3. 決済機能
 - ⬜ Stripe統合（オンライン決済）
 - ⬜ 事前決済機能
 - ⬜ 領収書発行
 
-### 3. イベント管理
+### 4. イベント管理
 - ⬜ 複数イベント管理
 - ⬜ イベントテンプレート
 - ⬜ 定期開催イベント対応
 
-### 4. アンケート機能
+### 5. アンケート機能
 - ⬜ イベント後のフィードバック
 - ⬜ 満足度調査
 - ⬜ 次回参加意向調査
 
-### 5. 多言語対応
+### 6. 多言語対応
 - ⬜ 英語版ページ
 - ⬜ 国際交流イベント対応
 
@@ -283,40 +357,39 @@ mina-to-lunch/
 
 ## 🔄 推奨される次のステップ
 
+### ✅ 完了済み（v1.0）
+1. ✅ **メール送信APIの統合** - Resend使用
+2. ✅ **予約キャンセル機能** - 専用ページ実装
+3. ✅ **管理者ダッシュボード** - CSV/JSONエクスポート対応
+4. ✅ **LINE通知機能** - Messaging API統合 🆕
+
 ### 短期（優先度：高）
-1. **メール送信APIの統合**
-   - SendGrid、Mailgun、AWS SESなどを使用
-   - 予約確認メールの自動送信
+5. **LINE機能の拡張**
+   - リッチメニューのカスタマイズ
+   - リマインダー自動送信機能
+   - QRコード受付システム
 
-2. **予約キャンセル機能**
-   - キャンセル専用ページの作成
-   - 予約IDによるキャンセル処理
-
-3. **管理者ダッシュボード**
-   - 予約状況の可視化
-   - 参加者管理
-
-### 中期（優先度：中）
-4. **データエクスポート機能**
-   - CSVダウンロード機能
-   - Excel形式での出力
-
-5. **通知機能の強化**
-   - イベント前日のリマインドメール
+6. **通知機能の強化**
+   - イベント前日のリマインド通知（メール・LINE）
    - 定員間近の通知
 
-6. **多言語対応**
+### 中期（優先度：中）
+7. **イベント後フォローアップ**
+   - 参加者へのお礼メッセージ
+   - フィードバックアンケート（LINE対応）
+
+8. **多言語対応**
    - 英語版ページの追加
    - 国際交流イベントへの対応
 
 ### 長期（優先度：低）
-7. **イベント管理機能**
+9. **イベント管理機能**
    - 複数イベントの管理
    - イベントテンプレート機能
 
-8. **アンケート機能**
-   - イベント後のフィードバック収集
-   - 参加者満足度調査
+10. **決済機能**
+   - オンライン決済統合
+   - 領収書自動発行
 
 ---
 
@@ -331,9 +404,13 @@ mina-to-lunch/
   - Fetch API
   - async/await
   - DOM操作
-- **Font Awesome 6**: アイコンライブラリ
+  - Session Storage API
+- **Font Awesome 6**: アイコンライブラリ（LINE, fa-brands対応） 🆕
 - **Google Fonts (Noto Sans JP)**: 日本語フォント
-- **RESTful Table API**: データ永続化
+- **Supabase**: PostgreSQL データベース
+- **Resend**: メール配信サービス
+- **LINE Messaging API**: プッシュ通知・チャットボット 🆕
+- **@line/bot-sdk**: LINE Bot SDK for Node.js 🆕
 
 ---
 
@@ -370,5 +447,5 @@ mina-to-lunch/
 ---
 
 **プロジェクト作成日**: 2024年10月24日  
-**最終更新日**: 2024年10月24日  
-**バージョン**: 1.0.0
+**最終更新日**: 2025年10月26日  
+**バージョン**: 1.1.0 - LINE通知機能追加 🆕

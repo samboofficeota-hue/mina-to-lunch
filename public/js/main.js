@@ -1,6 +1,7 @@
 // ===== 定数定義 =====
 const MAX_CAPACITY = 20;
 const TABLE_NAME = 'reservations';
+const LINE_BOT_BASIC_ID = '@YOUR_LINE_BOT_ID'; // TODO: LINE Bot IDを設定
 
 // ===== DOM要素 =====
 const form = document.getElementById('reservation-form');
@@ -8,11 +9,15 @@ const submitButton = document.getElementById('submit-button');
 const errorMessage = document.getElementById('error-message');
 const successMessage = document.getElementById('success-message');
 const remainingSeatsElement = document.getElementById('remaining-seats');
+const lineConnectButton = document.getElementById('line-connect-button');
+const lineStatus = document.getElementById('line-status');
 
 // ===== 初期化 =====
 document.addEventListener('DOMContentLoaded', () => {
     loadRemainingSeats();
     setupFormValidation();
+    setupLineConnect();
+    checkLineConnection();
 });
 
 // ===== 残席数の取得と表示 =====
@@ -49,6 +54,50 @@ async function loadRemainingSeats() {
             remainingSeatsElement.textContent = '';
         }
         return MAX_CAPACITY; // エラー時は予約可能とする
+    }
+}
+
+// ===== LINE連携設定 =====
+function setupLineConnect() {
+    if (lineConnectButton) {
+        lineConnectButton.addEventListener('click', () => {
+            // LINE公式アカウントへのリンクを開く
+            const lineAddFriendUrl = `https://line.me/R/ti/p/${LINE_BOT_BASIC_ID}`;
+            window.open(lineAddFriendUrl, '_blank');
+            
+            // 友だち追加後の案内を表示
+            setTimeout(() => {
+                alert('LINE公式アカウントを友だち追加した後、このページに戻って予約を続けてください。\n\n友だち追加が完了すると、予約通知がLINEで届きます。');
+                checkLineConnection();
+            }, 1000);
+        });
+    }
+}
+
+// ===== LINE連携状態の確認 =====
+function checkLineConnection() {
+    // URLパラメータからLINE User IDを取得
+    const urlParams = new URLSearchParams(window.location.search);
+    const lineUserId = urlParams.get('line_user_id');
+    
+    if (lineUserId) {
+        // LINE User IDをセッションストレージに保存
+        sessionStorage.setItem('line_user_id', lineUserId);
+        updateLineStatus(true);
+    } else {
+        // セッションストレージから確認
+        const storedLineUserId = sessionStorage.getItem('line_user_id');
+        if (storedLineUserId) {
+            updateLineStatus(true);
+        }
+    }
+}
+
+// ===== LINE連携状態の表示更新 =====
+function updateLineStatus(isConnected) {
+    if (isConnected && lineStatus && lineConnectButton) {
+        lineStatus.style.display = 'block';
+        lineConnectButton.style.display = 'none';
     }
 }
 
@@ -162,6 +211,13 @@ form.addEventListener('submit', async (e) => {
         reservation_date: new Date().toISOString()
     };
     
+    // LINE User IDがあれば追加
+    const lineUserId = sessionStorage.getItem('line_user_id');
+    if (lineUserId) {
+        formData.lineUserId = lineUserId;
+        console.log('LINE連携済み予約:', lineUserId);
+    }
+    
     // 送信ボタンを無効化
     submitButton.disabled = true;
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 送信中...';
@@ -183,9 +239,17 @@ form.addEventListener('submit', async (e) => {
         }
         
         // 成功メッセージ表示
-        showSuccess(`予約が完了しました！<br>
-            <strong>${formData.name}</strong> 様、ご予約ありがとうございます。<br>
-            確認メールを <strong>${formData.email}</strong> 宛に送信いたしました。`);
+        const lineConnected = sessionStorage.getItem('line_user_id');
+        let successMsg = `予約が完了しました！<br>
+            <strong>${formData.name}</strong> 様、ご予約ありがとうございます。<br>`;
+        
+        if (lineConnected) {
+            successMsg += `LINEに予約確認通知を送信しました。<br>メールでも確認メールをお送りしています。`;
+        } else {
+            successMsg += `確認メールを <strong>${formData.email}</strong> 宛に送信いたしました。`;
+        }
+        
+        showSuccess(successMsg);
         
         // フォームをリセット
         form.reset();

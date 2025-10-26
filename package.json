@@ -16,6 +16,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@line/bot-sdk": "^9.3.0",
     "@supabase/supabase-js": "^2.39.3",
     "resend": "^3.0.0"
   },

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { sendLineNotification } from './send-line-notification.js';
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -84,6 +85,24 @@ export default async function handler(req, res) {
         if (updateError) {
             console.error('キャンセル更新エラー:', updateError);
             throw new Error('予約のキャンセルに失敗しました');
+        }
+
+        // LINE通知を送信（LINE User IDがある場合）
+        if (reservation.line_user_id) {
+            try {
+                console.log('[cancel-reservation] LINE通知を送信中...');
+                await sendLineNotification(reservation.line_user_id, 'reservation_cancelled', {
+                    id: reservation.id,
+                    name: reservation.name,
+                    affiliation: reservation.affiliation,
+                    favorite: reservation.favorite,
+                    email: reservation.email
+                });
+                console.log('[cancel-reservation] LINE通知送信成功');
+            } catch (lineError) {
+                console.error('[cancel-reservation] LINE通知送信エラー:', lineError);
+                // LINE送信失敗してもエラーにしない
+            }
         }
 
         // キャンセル通知メールを送信

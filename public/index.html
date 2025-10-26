@@ -397,6 +397,51 @@ body {
     .info-item { flex-direction: column; align-items: flex-start; }
     .info-item i { margin-bottom: 8px; }
 }
+
+/* LINE連携スタイル */
+.line-connect-box {
+    background: linear-gradient(135deg, #f0fff4 0%, #e8f5e9 100%);
+    border: 2px solid #06C755;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.line-connect-header {
+    margin-bottom: 20px;
+}
+
+.line-button {
+    width: 100%;
+    max-width: 400px;
+    padding: 16px 24px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--white);
+    background: #06C755;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3);
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+.line-button:hover {
+    background: #05B04D;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 199, 85, 0.4);
+}
+
+.line-button:active {
+    transform: translateY(0);
+}
+
+.line-button i {
+    margin-right: 8px;
+    font-size: 1.3rem;
+}
     </style>
 </head>
 <body>
@@ -446,6 +491,26 @@ body {
         <!-- 予約フォーム -->
         <section class="reservation-form-section">
             <h2 class="section-title">席を予約する</h2>
+            
+            <!-- LINE連携セクション -->
+            <div id="line-connect-section" class="line-connect-box">
+                <div class="line-connect-header">
+                    <i class="fab fa-line" style="font-size: 2rem; color: #06C755;"></i>
+                    <h3 style="margin: 10px 0; color: #333;">LINE連携（推奨）</h3>
+                    <p style="color: #666; font-size: 0.9rem; margin: 0;">
+                        LINEと連携すると、予約確認やキャンセル通知をLINEで受け取れます
+                    </p>
+                </div>
+                <button type="button" id="line-connect-button" class="line-button">
+                    <i class="fab fa-line"></i> LINE公式アカウントを友だち追加
+                </button>
+                <div id="line-status" style="display: none; margin-top: 10px; padding: 10px; background: #E8F5E9; border-radius: 8px; color: #2E7D32;">
+                    <i class="fas fa-check-circle"></i> LINE連携済み
+                </div>
+                <p style="color: #999; font-size: 0.8rem; margin-top: 10px;">
+                    ※ LINE連携しなくてもメールで通知を受け取れます
+                </p>
+            </div>
             
             <div id="error-message" class="message error-message" style="display: none;"></div>
             <div id="success-message" class="message success-message" style="display: none;"></div>
