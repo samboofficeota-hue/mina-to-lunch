@@ -1,7 +1,7 @@
 // ===== 定数定義 =====
 const MAX_CAPACITY = 20;
 const TABLE_NAME = 'reservations';
-const LINE_BOT_BASIC_ID = '@YOUR_LINE_BOT_ID'; // TODO: LINE Bot IDを設定
+const LINE_BOT_BASIC_ID = '@082muhmk'; // LINE Bot Basic ID
 
 // ===== DOM要素 =====
 const form = document.getElementById('reservation-form');
