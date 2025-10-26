@@ -1,17 +1,18 @@
-# 📱 LINE通知機能 セットアップガイド
+# 📱 LINE統合機能 セットアップガイド
 
-このガイドでは、みなとランチにLINE通知機能を追加する手順を説明します。
+このガイドでは、みなとランチにLINE統合機能を追加する手順を説明します。
 
 ---
 
 ## 📋 概要
 
-LINE通知機能を有効にすると、以下が可能になります：
+LINE統合機能を有効にすると、以下が可能になります：
 
-- ✅ 予約確認通知をLINEで送信
+- ✅ LINEログインで予約フォームが自動入力
+- ✅ 予約完了後に自動でLINE通知を送信
 - ✅ キャンセル通知をLINEで送信
-- ✅ ユーザーがLINEで予約確認・キャンセルリンクにアクセス可能
 - ✅ LINEチャットボットでの簡易操作（予約確認、キャンセルURL取得など）
+- ✅ シームレスな予約体験の提供
 
 ---
 
@@ -56,6 +57,25 @@ LINE通知機能を有効にすると、以下が可能になります：
 | メールアドレス | あなたのメールアドレス |
 
 5. 利用規約に同意して「作成」をクリック
+
+---
+
+### Step 3.5: LINE Login 設定
+
+1. 作成したチャネルの「LINEログイン設定」タブを開く
+2. 「ウェブアプリでLINEログインを利用する」を **ON** にする
+3. 「コールバックURL」に以下を設定：
+
+```
+https://YOUR_VERCEL_DOMAIN.vercel.app/api/line-login-callback
+```
+
+**例**:
+```
+https://mina-to-lunch.vercel.app/api/line-login-callback
+```
+
+4. 「更新」ボタンをクリック
 
 ---
 
@@ -115,18 +135,6 @@ https://mina-to-lunch.vercel.app/api/line-webhook
 
 ---
 
-### Step 8: Basic ID の取得
-
-1. 「Messaging API設定」タブの上部
-2. 「Basic ID」をコピー（`@` から始まる文字列）
-
-```
-例: @123abcde
-```
-
-このIDは友だち追加用のリンクに使用します。
-
----
 
 ### Step 9: 環境変数の設定（Vercel）
 
@@ -139,7 +147,8 @@ https://mina-to-lunch.vercel.app/api/line-webhook
 |--------|---|------|
 | `LINE_CHANNEL_SECRET` | Step 5で取得したChannel Secret | LINEチャネルシークレット |
 | `LINE_CHANNEL_ACCESS_TOKEN` | Step 4で取得したChannel Access Token | LINE APIアクセストークン |
-| `LINE_BOT_BASIC_ID` | Step 8で取得したBasic ID（@付き） | 友だち追加用ID |
+| `LINE_CHANNEL_ID` | Step 3で取得したChannel ID | LINE Login用チャネルID |
+| `LINE_LOGIN_REDIRECT_URI` | `https://YOUR_DOMAIN.vercel.app/api/line-login-callback` | LINE LoginコールバックURL |
 
 **設定方法**:
 ```
@@ -149,8 +158,12 @@ Value: 1234567890abcdef1234567890abcdef
 Name: LINE_CHANNEL_ACCESS_TOKEN
 Value: eyJhbGciOiJIUzI1NiJ9...
 
-Name: LINE_BOT_BASIC_ID
-Value: @123abcde
+
+Name: LINE_CHANNEL_ID
+Value: 1234567890
+
+Name: LINE_LOGIN_REDIRECT_URI
+Value: https://mina-to-lunch.vercel.app/api/line-login-callback
 ```
 
 5. 各環境変数の「Add」をクリック
@@ -158,30 +171,6 @@ Value: @123abcde
 
 ---
 
-### Step 10: コードの更新
-
-1. `public/js/main.js` を開く
-2. 以下の行を見つける：
-
-```javascript
-const LINE_BOT_BASIC_ID = '@YOUR_LINE_BOT_ID'; // TODO: LINE Bot IDを設定
-```
-
-3. `@YOUR_LINE_BOT_ID` をStep 8で取得したBasic IDに置き換える：
-
-```javascript
-const LINE_BOT_BASIC_ID = '@123abcde'; // あなたのBasic ID
-```
-
-4. 変更をコミット&プッシュ：
-
-```bash
-git add public/js/main.js
-git commit -m "Update LINE Bot Basic ID"
-git push
-```
-
----
 
 ### Step 11: Supabase データベースの更新
 
@@ -235,16 +224,17 @@ git push
 4. 「追加」をタップ
 5. ウェルカムメッセージが届くことを確認
 
-#### 2. 予約フロー確認
+#### 2. 新しい予約フロー確認
 
 1. 予約フォーム（https://YOUR_DOMAIN.vercel.app）にアクセス
-2. 「LINE公式アカウントを友だち追加」ボタンをクリック
-3. 友だち追加（既に追加済みならスキップ）
-4. 予約フォームに戻る
+2. 「LINEでログイン」ボタンをクリック
+3. LINEログイン画面で認証
+4. 予約フォームに自動入力されることを確認
 5. 必要事項を入力して予約
-6. LINEに予約確認通知が届くことを確認 ✅
+6. LINEに予約確認通知が自動で届くことを確認 ✅
 
-#### 3. チャットボット確認
+
+#### 4. チャットボット確認
 
 LINEで以下のメッセージを送信してみる：
 
@@ -331,21 +321,22 @@ LINEで以下のメッセージを送信してみる：
 ## 📊 動作フロー図
 
 ```
-【予約時】
+【LINEログイン予約フロー】
 ユーザー
   ↓
-LINE友だち追加（オプション）
+LINEでログインボタンクリック
   ↓
-予約フォーム入力
+LINEログイン画面で認証
   ↓
-予約API (/api/create-reservation)
+予約フォームに自動入力
+  ↓
+予約フォーム送信
   ↓
 ├─ Supabaseに保存（line_user_idを含む）
-├─ LINE通知送信（sendLineNotification）
+├─ LINE通知自動送信（sendLineNotification）
 └─ メール送信（Resend）
   ↓
-ユーザーのLINEに通知 🎉
-
+ユーザーのLINEに自動通知 🎉
 
 【チャットボット】
 ユーザーがLINEメッセージ送信
@@ -402,15 +393,19 @@ LINE Webhook (/api/line-webhook)
 
 ## ❓ よくある質問
 
-### Q1: LINE通知とメール通知、どちらが優先されますか？
+### Q1: LINEログインは必須ですか？
 
-A: 両方送信されます。LINE連携済みの場合はLINE通知とメール通知の両方が届きます。
+A: 必須ではありません。LINEログインをしなくても予約は可能ですが、LINEログインをすると予約フォームが自動入力され、予約完了後に自動でLINE通知が届きます。
 
-### Q2: ユーザーがLINEをブロックしたらどうなりますか？
+### Q2: LINEログインしない場合の通知方法は？
+
+A: LINEログインしない場合は、メール通知のみが送信されます。LINE通知を受け取るには、LINEログインが必要です。
+
+### Q3: ユーザーがLINEをブロックしたらどうなりますか？
 
 A: LINE通知は届きませんが、メール通知は届きます。システム側ではエラーログに記録されますが、予約自体は成功します。
 
-### Q3: LINE公式アカウントの料金は？
+### Q4: LINE公式アカウントの料金は？
 
 A: メッセージ送信数に応じて課金されます：
 - フリープラン: 月200通まで無料
@@ -419,7 +414,7 @@ A: メッセージ送信数に応じて課金されます：
 
 小規模イベントならフリープランで十分です。
 
-### Q4: 複数のイベントで同じLINE公式アカウントを使えますか？
+### Q5: 複数のイベントで同じLINE公式アカウントを使えますか？
 
 A: はい。同じアカウントを複数イベントで使用できます。メッセージ内容でイベントを識別できます。
 

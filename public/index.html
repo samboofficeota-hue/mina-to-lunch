@@ -442,6 +442,20 @@ body {
     margin-right: 8px;
     font-size: 1.3rem;
 }
+
+/* LINE連携済みスタイル */
+.line-connected-box {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border: 2px solid #4CAF50;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.line-connected-header {
+    margin-bottom: 20px;
+}
     </style>
 </head>
 <body>
@@ -496,18 +510,29 @@ body {
             <div id="line-connect-section" class="line-connect-box">
                 <div class="line-connect-header">
                     <i class="fab fa-line" style="font-size: 2rem; color: #06C755;"></i>
-                    <h3 style="margin: 10px 0; color: #333;">📱 LINE通知について</h3>
+                    <h3 style="margin: 10px 0; color: #333;">📱 LINEでログイン</h3>
                     <p style="color: #666; font-size: 0.95rem; margin: 10px 0; line-height: 1.6;">
-                        予約完了後、<strong>LINE公式アカウント（@082muhmk）</strong>を友だち追加し、<br>
-                        発行される<strong>予約ID</strong>を送信すると、LINE通知が届きます。
+                        LINEアカウントでログインすると、<br>
+                        予約フォームが自動入力され、<strong>予約完了後に自動でLINE通知</strong>が届きます。
                     </p>
                 </div>
-                <button type="button" id="line-connect-button" class="line-button" onclick="window.open('https://line.me/R/ti/p/@082muhmk', '_blank')">
-                    <i class="fab fa-line"></i> LINE公式アカウントを友だち追加
+                <button type="button" id="line-connect-button" class="line-button">
+                    <i class="fab fa-line"></i> LINEでログイン
                 </button>
                 <div style="margin-top: 15px; padding: 15px; background: #E3F2FD; border-radius: 8px; font-size: 0.9rem; color: #1565C0;">
-                    <strong>💡 通知の流れ：</strong><br>
-                    ① 予約フォーム送信 → ② 予約ID発行 → ③ LINEで予約ID送信 → ④ 通知受信 ✅
+                    <strong>💡 新しい流れ：</strong><br>
+                    ① LINEでログイン → ② フォーム自動入力 → ③ 予約送信 → ④ 自動通知受信 ✅
+                </div>
+            </div>
+            
+            <!-- LINE連携済み表示 -->
+            <div id="line-status" class="line-connected-box" style="display: none;">
+                <div class="line-connected-header">
+                    <i class="fab fa-line" style="font-size: 2rem; color: #06C755;"></i>
+                    <h3 style="margin: 10px 0; color: #333;">✅ LINE連携完了</h3>
+                    <p style="color: #666; font-size: 0.95rem; margin: 10px 0; line-height: 1.6;">
+                        予約完了後、自動的にLINE通知が届きます。
+                    </p>
                 </div>
             </div>
             
@@ -558,10 +583,7 @@ body {
 
         <!-- 予約済みリストへのリンク -->
         <section class="reservation-list-link">
-            <a href="./reservations.html" class="link-button">
-                <i class="fas fa-list"></i> 予約一覧を見る
-            </a>
-            <a href="./admin.html" class="link-button" style="margin-left: 10px; border-color: #2c3e50; color: #2c3e50;">
+            <a href="./admin.html" class="link-button">
                 <i class="fas fa-user-shield"></i> 管理者
             </a>
         </section>

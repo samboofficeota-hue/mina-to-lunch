@@ -1,7 +1,6 @@
 // ===== 定数定義 =====
 const MAX_CAPACITY = 20;
 const TABLE_NAME = 'reservations';
-const LINE_BOT_BASIC_ID = '@082muhmk'; // LINE Bot Basic ID
 
 // ===== DOM要素 =====
 const form = document.getElementById('reservation-form');
@@ -60,17 +59,35 @@ async function loadRemainingSeats() {
 // ===== LINE連携設定 =====
 function setupLineConnect() {
     if (lineConnectButton) {
-        lineConnectButton.addEventListener('click', () => {
-            // LINE公式アカウントへのリンクを開く
-            const lineAddFriendUrl = `https://line.me/R/ti/p/${LINE_BOT_BASIC_ID}`;
-            window.open(lineAddFriendUrl, '_blank');
-            
-            // 友だち追加後の案内を表示
-            setTimeout(() => {
-                alert('LINE公式アカウントを友だち追加した後、このページに戻って予約を続けてください。\n\n友だち追加が完了すると、予約通知がLINEで届きます。');
-                checkLineConnection();
-            }, 1000);
+        lineConnectButton.addEventListener('click', async () => {
+            try {
+                // LINEログインを開始
+                await startLineLogin();
+            } catch (error) {
+                console.error('LINEログインエラー:', error);
+                showError('LINEログインに失敗しました。もう一度お試しください。');
+            }
         });
+    }
+}
+
+// ===== LINEログイン開始 =====
+async function startLineLogin() {
+    try {
+        // LINEログインURLを取得
+        const response = await fetch('/api/line-login');
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'LINEログインURLの取得に失敗しました');
+        }
+        
+        // LINEログイン画面に遷移
+        window.location.href = result.authUrl;
+        
+    } catch (error) {
+        console.error('LINEログイン開始エラー:', error);
+        throw error;
     }
 }
 
@@ -79,7 +96,45 @@ function checkLineConnection() {
     // URLパラメータからLINE User IDを取得
     const urlParams = new URLSearchParams(window.location.search);
     const lineUserId = urlParams.get('line_user_id');
+    const lineDisplayName = urlParams.get('line_display_name');
+    const linePictureUrl = urlParams.get('line_picture_url');
+    const lineLoginSuccess = urlParams.get('line_login_success');
+    const lineLoginError = urlParams.get('line_login_error');
     
+    // LINEログインエラーの処理
+    if (lineLoginError) {
+        showError(`LINEログインに失敗しました: ${decodeURIComponent(lineLoginError)}`);
+        // URLパラメータをクリア
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+    }
+    
+    // LINEログイン成功の処理
+    if (lineLoginSuccess === 'true' && lineUserId) {
+        // LINE User IDをセッションストレージに保存
+        sessionStorage.setItem('line_user_id', lineUserId);
+        sessionStorage.setItem('line_display_name', lineDisplayName || '');
+        sessionStorage.setItem('line_picture_url', linePictureUrl || '');
+        
+        // フォームに自動入力
+        if (lineDisplayName) {
+            const nameField = document.getElementById('name');
+            if (nameField && !nameField.value) {
+                nameField.value = lineDisplayName;
+            }
+        }
+        
+        // 成功メッセージ表示
+        showSuccess(`🎉 LINEログインが完了しました！<br>こんにちは、<strong>${lineDisplayName}</strong> さん！<br>予約フォームに自動入力されました。`);
+        
+        // URLパラメータをクリア
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        updateLineStatus(true);
+        return;
+    }
+    
+    // 既存のLINE User IDを確認
     if (lineUserId) {
         // LINE User IDをセッションストレージに保存
         sessionStorage.setItem('line_user_id', lineUserId);
@@ -250,34 +305,39 @@ form.addEventListener('submit', async (e) => {
         
         // 成功メッセージ表示
         const reservationId = result.reservation?.id || '';
+        const lineUserId = sessionStorage.getItem('line_user_id');
         
         let successMsg = `🎉 予約が完了しました！<br>
             <strong>${formData.name}</strong> 様、ご予約ありがとうございます。<br><br>`;
         
-        successMsg += `📱 <strong>次のステップ：LINE通知の設定</strong><br>
-            予約確認通知をLINEで受け取るには、以下の手順を行ってください：<br>
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #06C755;">
-                <p style="margin: 0 0 10px 0; font-weight: bold; color: #06C755;">
-                    <i class="fab fa-line"></i> LINE通知を受け取る方法
-                </p>
-                <ol style="text-align: left; margin: 10px 0; padding-left: 20px; line-height: 1.8;">
-                    <li><strong>LINE公式アカウント「@082muhmk」を友だち追加</strong></li>
-                    <li>トーク画面で、以下の<strong>予約ID</strong>をコピーして送信</li>
-                </ol>
-                <div style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0; text-align: center;">
-                    <p style="margin: 0 0 8px 0; font-size: 0.9rem; color: #666;">あなたの予約ID</p>
-                    <p style="margin: 0; font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #333; word-break: break-all;">
-                        ${reservationId}
+        if (lineUserId) {
+            // LINEログイン済みの場合
+            successMsg += `📱 <strong>LINE通知が自動送信されました！</strong><br>
+                予約確認通知がLINEに届いているはずです。<br>
+                <div style="background: #e8f5e9; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #4CAF50;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #4CAF50;">
+                        <i class="fab fa-line"></i> LINE通知完了
                     </p>
-                    <button onclick="navigator.clipboard.writeText('${reservationId}').then(() => alert('予約IDをコピーしました！LINEに貼り付けてください。'))" 
-                            style="margin-top: 10px; padding: 8px 20px; background: #06C755; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
-                        <i class="fas fa-copy"></i> 予約IDをコピー
-                    </button>
-                </div>
-                <p style="margin: 10px 0 0 0; font-size: 0.9rem; color: #666;">
-                    ✅ 予約IDを送信すると、即座に予約確認通知が届きます
-                </p>
-            </div>`;
+                    <p style="margin: 0; font-size: 0.9rem; color: #2E7D32;">
+                        ✅ 予約確認通知が自動的にLINEに送信されました<br>
+                        ✅ キャンセル時もLINEに通知が届きます<br>
+                        ✅ 追加の操作は不要です
+                    </p>
+                </div>`;
+        } else {
+            // LINE未連携の場合
+            successMsg += `📱 <strong>メール通知が送信されました</strong><br>
+                予約確認メールが送信されました。<br>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #06C755;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #06C755;">
+                        <i class="fas fa-envelope"></i> メール通知完了
+                    </p>
+                    <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                        ✅ 予約確認メールが送信されました<br>
+                        ✅ LINE通知を受け取るには、次回はLINEログインをお試しください
+                    </p>
+                </div>`;
+        }
         
         showSuccess(successMsg);
         
@@ -287,9 +347,9 @@ form.addEventListener('submit', async (e) => {
         // 残席数を更新
         await loadRemainingSeats();
         
-        // 3秒後に予約一覧ページに遷移
+        // 3秒後に管理者ページに遷移
         setTimeout(() => {
-            window.location.href = './reservations.html';
+            window.location.href = './admin.html';
         }, 3000);
         
     } catch (error) {
