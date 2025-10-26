@@ -496,20 +496,22 @@ body {
             <div id="line-connect-section" class="line-connect-box">
                 <div class="line-connect-header">
                     <i class="fab fa-line" style="font-size: 2rem; color: #06C755;"></i>
-                    <h3 style="margin: 10px 0; color: #333;">LINE連携（推奨）</h3>
+                    <h3 style="margin: 10px 0; color: #333;">LINE通知（必須）</h3>
                     <p style="color: #666; font-size: 0.9rem; margin: 0;">
-                        LINEと連携すると、予約確認やキャンセル通知をLINEで受け取れます
+                        予約確認通知をLINEで受け取ります。<br>
+                        <strong>予約前に友だち追加をお願いします</strong>
                     </p>
                 </div>
                 <button type="button" id="line-connect-button" class="line-button">
                     <i class="fab fa-line"></i> LINE公式アカウントを友だち追加
                 </button>
                 <div id="line-status" style="display: none; margin-top: 10px; padding: 10px; background: #E8F5E9; border-radius: 8px; color: #2E7D32;">
-                    <i class="fas fa-check-circle"></i> LINE連携済み
+                    <i class="fas fa-check-circle"></i> LINE連携済み - 予約通知が届きます
                 </div>
-                <p style="color: #999; font-size: 0.8rem; margin-top: 10px;">
-                    ※ LINE連携しなくてもメールで通知を受け取れます
-                </p>
+                <div id="line-not-connected-warning" style="margin-top: 10px; padding: 12px; background: #FFF3CD; border-radius: 8px; color: #856404; font-size: 0.9rem;">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    <strong>注意:</strong> 友だち追加していない場合、予約完了後にLINEで予約IDをお送りください
+                </div>
             </div>
             
             <div id="error-message" class="message error-message" style="display: none;"></div>
@@ -540,14 +542,8 @@ body {
                     <input type="text" id="favorite" name="favorite" required placeholder="例: 最近ハマっていることや好きなもの">
                 </div>
 
-                <div class="form-group">
-                    <label for="email">
-                        <i class="fas fa-envelope"></i> メールアドレス
-                        <span class="required">*</span>
-                    </label>
-                    <input type="email" id="email" name="email" required placeholder="例: example@email.com">
-                    <small class="helper-text">予約確認メールをお送りします。キャンセルの際はメールに返信してください。</small>
-                </div>
+                <!-- 非表示のメールアドレス（システム用） -->
+                <input type="hidden" id="email" name="email" value="noreply@line-reservation.local">
 
                 <div class="form-group checkbox-group">
                     <label class="checkbox-label">

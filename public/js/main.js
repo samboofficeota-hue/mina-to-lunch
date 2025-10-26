@@ -95,9 +95,18 @@ function checkLineConnection() {
 
 // ===== LINE連携状態の表示更新 =====
 function updateLineStatus(isConnected) {
+    const warningSection = document.getElementById('line-not-connected-warning');
+    
     if (isConnected && lineStatus && lineConnectButton) {
         lineStatus.style.display = 'block';
         lineConnectButton.style.display = 'none';
+        if (warningSection) {
+            warningSection.style.display = 'none';
+        }
+    } else {
+        if (warningSection) {
+            warningSection.style.display = 'block';
+        }
     }
 }
 
@@ -117,6 +126,11 @@ function setupFormValidation() {
 
 // ===== フィールドバリデーション =====
 function validateField(field) {
+    // 非表示のメールフィールドはスキップ
+    if (field.type === 'hidden') {
+        return true;
+    }
+
     const value = field.value.trim();
     let isValid = true;
     let errorMsg = '';
@@ -124,12 +138,6 @@ function validateField(field) {
     if (field.hasAttribute('required') && !value) {
         isValid = false;
         errorMsg = 'この項目は必須です';
-    } else if (field.type === 'email' && value) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-            isValid = false;
-            errorMsg = '有効なメールアドレスを入力してください';
-        }
     }
 
     if (!isValid) {
@@ -206,7 +214,7 @@ form.addEventListener('submit', async (e) => {
         name: document.getElementById('name').value.trim(),
         affiliation: document.getElementById('affiliation').value.trim(),
         favorite: document.getElementById('favorite').value.trim(),
-        email: document.getElementById('email').value.trim(),
+        email: document.getElementById('email').value, // 隠しフィールドの値
         status: 'confirmed',
         reservation_date: new Date().toISOString()
     };
@@ -216,6 +224,8 @@ form.addEventListener('submit', async (e) => {
     if (lineUserId) {
         formData.lineUserId = lineUserId;
         console.log('LINE連携済み予約:', lineUserId);
+    } else {
+        console.log('LINE未連携での予約');
     }
     
     // 送信ボタンを無効化
@@ -240,13 +250,19 @@ form.addEventListener('submit', async (e) => {
         
         // 成功メッセージ表示
         const lineConnected = sessionStorage.getItem('line_user_id');
-        let successMsg = `予約が完了しました！<br>
-            <strong>${formData.name}</strong> 様、ご予約ありがとうございます。<br>`;
+        let successMsg = `🎉 予約が完了しました！<br>
+            <strong>${formData.name}</strong> 様、ご予約ありがとうございます。<br><br>`;
         
         if (lineConnected) {
-            successMsg += `LINEに予約確認通知を送信しました。<br>メールでも確認メールをお送りしています。`;
+            successMsg += `✅ LINEに予約確認通知を送信しました。<br>LINEアプリでご確認ください。`;
         } else {
-            successMsg += `確認メールを <strong>${formData.email}</strong> 宛に送信いたしました。`;
+            successMsg += `📱 <strong>重要：</strong>予約確認通知を受け取るには、以下の手順を行ってください：<br>
+                <ol style="text-align: left; margin: 15px 0; padding-left: 20px;">
+                    <li>LINE公式アカウント「@082muhmk」を友だち追加</li>
+                    <li>トーク画面で「<strong>予約確認</strong>」と送信</li>
+                    <li>予約ID: <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">${result.reservation?.id || 'XXXXX'}</code></li>
+                </ol>
+                これで通知が受け取れるようになります。`;
         }
         
         showSuccess(successMsg);
