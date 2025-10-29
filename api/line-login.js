@@ -20,11 +20,17 @@ export async function generateLineLoginUrl() {
     
     // 環境変数のチェック
     if (!channelId) {
-        throw new Error('LINE_CHANNEL_ID環境変数が設定されていません');
+        console.error('[line-login] LINE_CHANNEL_ID環境変数が設定されていません');
+        throw new Error('LINE_CHANNEL_ID環境変数が設定されていません。Vercelの環境変数でLINE_CHANNEL_IDを設定してください。');
     }
     
     console.log('[line-login] Channel ID:', channelId);
     console.log('[line-login] Redirect URI:', redirectUri);
+    console.log('[line-login] 環境変数チェック:', {
+        LINE_CHANNEL_ID: !!channelId,
+        LINE_CHANNEL_SECRET: !!process.env.LINE_CHANNEL_SECRET,
+        LINE_CHANNEL_ACCESS_TOKEN: !!process.env.LINE_CHANNEL_ACCESS_TOKEN
+    });
     
     const state = generateRandomString(32);
     const nonce = generateRandomString(32);

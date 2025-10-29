@@ -141,7 +141,9 @@ export default async function handler(req, res) {
             console.log('[create-reservation] LINE User IDがないため、LINE通知をスキップ');
         }
 
-        // 確認メールを送信
+        // メール送信はLINE通知に統一（一時的にコメントアウト）
+        // メールが必要な場合は後で有効化
+        /*
         try {
             const emailContent = {
                 from: `Minato Lunch <${process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'}>`,
@@ -330,6 +332,7 @@ ${name} 様
             console.error('メール送信エラー:', emailError);
             console.error('詳細:', emailError.response?.body);
         }
+        */
 
         // 成功レスポンス
         return res.status(201).json({

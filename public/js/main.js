@@ -323,20 +323,19 @@ form.addEventListener('submit', async (e) => {
                     <p style="margin: 0; font-size: 0.9rem; color: #2E7D32;">
                         ✅ 予約確認通知が自動的にLINEに送信されました<br>
                         ✅ キャンセル時もLINEに通知が届きます<br>
-                        ✅ 追加の操作は不要です
+                        ✅ LINEアプリで確認してください
                     </p>
                 </div>`;
         } else {
             // LINE未連携の場合
-            successMsg += `📱 <strong>メール通知が送信されました</strong><br>
-                予約確認メールが送信されました。<br>
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #06C755;">
-                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #06C755;">
-                        <i class="fas fa-envelope"></i> メール通知完了
+            successMsg += `📱 <strong>予約が完了しました</strong><br>
+                <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #ffc107;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #856404;">
+                        <i class="fab fa-line"></i> LINE通知を受け取るには
                     </p>
-                    <p style="margin: 0; font-size: 0.9rem; color: #666;">
-                        ✅ 予約確認メールが送信されました<br>
-                        ✅ LINE通知を受け取るには、次回はLINEログインをお試しください
+                    <p style="margin: 0; font-size: 0.9rem; color: #856404;">
+                        ℹ️ LINE通知を受け取るには、次回はLINEログインをお試しください<br>
+                        ℹ️ LINE通知では予約確認とキャンセル通知が自動送信されます
                     </p>
                 </div>`;
         }
