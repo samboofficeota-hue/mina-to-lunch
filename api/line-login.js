@@ -12,8 +12,11 @@ const supabase = createClient(
  */
 export async function generateLineLoginUrl() {
     const channelId = process.env.LINE_CHANNEL_ID;
+    // 本番環境では固定ドメインを使用
     const redirectUri = process.env.LINE_LOGIN_REDIRECT_URI || 
-        `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/line-login-callback`;
+        (process.env.NODE_ENV === 'production' 
+            ? 'https://mina-to-lunch.vercel.app/api/line-login-callback'
+            : `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/line-login-callback`);
     
     // 環境変数のチェック
     if (!channelId) {
@@ -64,8 +67,11 @@ export async function handleLineLoginCallback(code, state, nonce) {
             throw new Error('LINE_CHANNEL_SECRET環境変数が設定されていません');
         }
         
+        // 本番環境では固定ドメインを使用
         const redirectUri = process.env.LINE_LOGIN_REDIRECT_URI || 
-            `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/line-login-callback`;
+            (process.env.NODE_ENV === 'production' 
+                ? 'https://mina-to-lunch.vercel.app/api/line-login-callback'
+                : `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/line-login-callback`);
         
         console.log('[line-login-callback] Channel ID:', process.env.LINE_CHANNEL_ID);
         console.log('[line-login-callback] Redirect URI:', redirectUri);

@@ -13,18 +13,24 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
     
-    if (req.method === 'GET') {
+    if (req.method === 'GET' || req.method === 'POST') {
         try {
-            const { code, state, error } = req.query;
+            // GETとPOSTの両方に対応
+            const { code, state, error } = req.method === 'GET' ? req.query : req.body;
+            
+            // ベースURLの設定
+            const baseUrl = process.env.NODE_ENV === 'production' 
+                ? 'https://mina-to-lunch.vercel.app'
+                : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
             
             // エラーチェック
             if (error) {
                 console.error('LINE Login エラー:', error);
-                return res.redirect(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}?line_login_error=${encodeURIComponent(error)}`);
+                return res.redirect(`${baseUrl}?line_login_error=${encodeURIComponent(error)}`);
             }
             
             if (!code || !state) {
-                return res.redirect(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}?line_login_error=missing_parameters`);
+                return res.redirect(`${baseUrl}?line_login_error=missing_parameters`);
             }
             
             // LINE Login コールバック処理
@@ -33,7 +39,7 @@ export default async function handler(req, res) {
             
             if (!result.success) {
                 console.error('LINE Login コールバック処理エラー:', result.error);
-                return res.redirect(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}?line_login_error=${encodeURIComponent(result.error)}`);
+                return res.redirect(`${baseUrl}?line_login_error=${encodeURIComponent(result.error)}`);
             }
             
             console.log('[line-login-callback] ログイン成功:', {
@@ -43,7 +49,7 @@ export default async function handler(req, res) {
             });
             
             // 成功時はフロントエンドにリダイレクト
-            const redirectUrl = new URL(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}`);
+            const redirectUrl = new URL(baseUrl);
             redirectUrl.searchParams.set('line_user_id', result.userId);
             redirectUrl.searchParams.set('line_display_name', result.displayName);
             redirectUrl.searchParams.set('line_picture_url', result.pictureUrl || '');
@@ -54,7 +60,10 @@ export default async function handler(req, res) {
             
         } catch (error) {
             console.error('LINE Login コールバック処理エラー:', error);
-            return res.redirect(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}?line_login_error=${encodeURIComponent(error.message)}`);
+            const baseUrl = process.env.NODE_ENV === 'production' 
+                ? 'https://mina-to-lunch.vercel.app'
+                : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+            return res.redirect(`${baseUrl}?line_login_error=${encodeURIComponent(error.message)}`);
         }
     }
     
