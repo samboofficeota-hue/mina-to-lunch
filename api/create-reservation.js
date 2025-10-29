@@ -88,6 +88,8 @@ export default async function handler(req, res) {
         if (lineUserId) {
             reservationData.line_user_id = lineUserId;
             console.log('[create-reservation] LINE User ID:', lineUserId);
+        } else {
+            console.log('[create-reservation] LINE User ID not provided');
         }
 
         const { data: reservation, error: insertError } = await supabase
@@ -105,18 +107,38 @@ export default async function handler(req, res) {
         if (lineUserId) {
             try {
                 console.log('[create-reservation] LINE通知を送信中...');
-                await sendLineNotification(lineUserId, 'reservation_confirmed', {
+                console.log('[create-reservation] LINE User ID:', lineUserId);
+                console.log('[create-reservation] Reservation data:', {
                     id: reservation.id,
                     name: reservation.name,
                     affiliation: reservation.affiliation,
                     favorite: reservation.favorite,
                     email: reservation.email
                 });
-                console.log('[create-reservation] LINE通知送信成功');
+                
+                const lineResult = await sendLineNotification(lineUserId, 'reservation_confirmed', {
+                    id: reservation.id,
+                    name: reservation.name,
+                    affiliation: reservation.affiliation,
+                    favorite: reservation.favorite,
+                    email: reservation.email
+                });
+                
+                if (lineResult.success) {
+                    console.log('[create-reservation] LINE通知送信成功');
+                } else {
+                    console.error('[create-reservation] LINE通知送信失敗:', lineResult);
+                }
             } catch (lineError) {
                 console.error('[create-reservation] LINE通知送信エラー:', lineError);
+                console.error('[create-reservation] LINE Error details:', {
+                    message: lineError.message,
+                    stack: lineError.stack
+                });
                 // LINE送信失敗してもエラーにしない
             }
+        } else {
+            console.log('[create-reservation] LINE User IDがないため、LINE通知をスキップ');
         }
 
         // 確認メールを送信

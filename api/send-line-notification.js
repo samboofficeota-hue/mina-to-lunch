@@ -13,9 +13,22 @@ const lineClient = new Client(lineConfig);
  * LINE通知を送信するヘルパー関数
  */
 export async function sendLineNotification(userId, type, data) {
+    console.log('[LINE] sendLineNotification called with:', { userId, type, data });
+    
     if (!userId) {
         console.log('[LINE] ユーザーIDがないため通知をスキップ');
         return { success: false, reason: 'no_user_id' };
+    }
+
+    // 環境変数のチェック
+    if (!process.env.LINE_CHANNEL_ACCESS_TOKEN) {
+        console.error('[LINE] LINE_CHANNEL_ACCESS_TOKEN環境変数が設定されていません');
+        return { success: false, reason: 'missing_access_token' };
+    }
+
+    if (!process.env.LINE_CHANNEL_SECRET) {
+        console.error('[LINE] LINE_CHANNEL_SECRET環境変数が設定されていません');
+        return { success: false, reason: 'missing_channel_secret' };
     }
 
     try {
@@ -23,6 +36,7 @@ export async function sendLineNotification(userId, type, data) {
 
         switch (type) {
             case 'reservation_confirmed':
+                console.log('[LINE] 予約確認メッセージを作成中...');
                 message = {
                     type: 'flex',
                     altText: '【みなとランチ】予約確認',
@@ -31,6 +45,7 @@ export async function sendLineNotification(userId, type, data) {
                 break;
 
             case 'reservation_cancelled':
+                console.log('[LINE] キャンセル完了メッセージを作成中...');
                 message = {
                     type: 'flex',
                     altText: '【みなとランチ】キャンセル完了',
@@ -39,6 +54,7 @@ export async function sendLineNotification(userId, type, data) {
                 break;
 
             case 'reminder':
+                console.log('[LINE] リマインダーメッセージを作成中...');
                 message = {
                     type: 'text',
                     text: `🔔 リマインダー\n\n明日は「みなとランチ」の開催日です！\n\n日時: 11月27日(木) 12:00〜13:00\n会場: VOYAGE（神奈川大学みなとみらいキャンパス 1階）\n\nお待ちしております！`
@@ -50,12 +66,19 @@ export async function sendLineNotification(userId, type, data) {
                 return { success: false, reason: 'unknown_type' };
         }
 
+        console.log('[LINE] メッセージ送信開始:', { userId, messageType: message.type });
         await lineClient.pushMessage(userId, message);
         console.log(`[LINE] 通知送信成功: ${userId} (${type})`);
         return { success: true };
 
     } catch (error) {
         console.error('[LINE] 通知送信エラー:', error);
+        console.error('[LINE] エラー詳細:', {
+            message: error.message,
+            status: error.status,
+            statusText: error.statusText,
+            response: error.response?.data
+        });
         return { success: false, error: error.message };
     }
 }

@@ -279,8 +279,10 @@ form.addEventListener('submit', async (e) => {
     if (lineUserId) {
         formData.lineUserId = lineUserId;
         console.log('LINE連携済み予約:', lineUserId);
+        console.log('送信データ:', formData);
     } else {
         console.log('LINE未連携での予約');
+        console.log('送信データ:', formData);
     }
     
     // 送信ボタンを無効化

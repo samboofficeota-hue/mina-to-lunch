@@ -75,6 +75,11 @@ https://YOUR_VERCEL_DOMAIN.vercel.app/api/line-login-callback
 https://mina-to-lunch.vercel.app/api/line-login-callback
 ```
 
+⚠️ **重要**: 
+- `@`マークは含めないでください
+- プレビューデプロイメント（`-xxxxx-yoshis-projects-xxxxx`）ではなく、本番ドメインを使用してください
+- URLのみを入力してください
+
 4. 「更新」ボタンをクリック
 
 ### Step 3.6: Channel ID の取得

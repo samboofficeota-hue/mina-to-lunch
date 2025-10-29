@@ -28,12 +28,19 @@ export default async function handler(req, res) {
             }
             
             // LINE Login コールバック処理
+            console.log('[line-login-callback] コールバック処理開始:', { code: code?.substring(0, 10) + '...', state });
             const result = await handleLineLoginCallback(code, state);
             
             if (!result.success) {
                 console.error('LINE Login コールバック処理エラー:', result.error);
                 return res.redirect(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}?line_login_error=${encodeURIComponent(result.error)}`);
             }
+            
+            console.log('[line-login-callback] ログイン成功:', {
+                userId: result.userId,
+                displayName: result.displayName,
+                pictureUrl: result.pictureUrl ? 'あり' : 'なし'
+            });
             
             // 成功時はフロントエンドにリダイレクト
             const redirectUrl = new URL(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}`);
@@ -42,6 +49,7 @@ export default async function handler(req, res) {
             redirectUrl.searchParams.set('line_picture_url', result.pictureUrl || '');
             redirectUrl.searchParams.set('line_login_success', 'true');
             
+            console.log('[line-login-callback] リダイレクトURL:', redirectUrl.toString());
             return res.redirect(redirectUrl.toString());
             
         } catch (error) {
