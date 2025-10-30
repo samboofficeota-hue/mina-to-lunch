@@ -67,18 +67,56 @@ export async function sendLineNotification(userId, type, data) {
         }
 
         console.log('[LINE] メッセージ送信開始:', { userId, messageType: message.type });
-        await lineClient.pushMessage(userId, message);
-        console.log(`[LINE] 通知送信成功: ${userId} (${type})`);
-        return { success: true };
+        
+        try {
+            await lineClient.pushMessage(userId, message);
+            console.log(`[LINE] 通知送信成功: ${userId} (${type})`);
+            return { success: true };
+        } catch (pushError) {
+            // LINE APIのエラーレスポンスを詳細に記録
+            if (pushError.originalError) {
+                const originalError = pushError.originalError;
+                console.error('[LINE] 通知送信エラー詳細:', {
+                    status: originalError.status,
+                    statusCode: originalError.statusCode,
+                    message: originalError.message,
+                    response: originalError.response?.data || originalError.response?.body
+                });
+                
+                // 友だち追加されていない場合のエラーコード
+                if (originalError.statusCode === 400 || originalError.statusCode === 404) {
+                    const errorMsg = originalError.response?.data?.message || originalError.message;
+                    if (errorMsg && (errorMsg.includes('not found') || errorMsg.includes('user') && errorMsg.includes('not'))) {
+                        return { 
+                            success: false, 
+                            error: '友だち追加が必要です',
+                            reason: 'friend_not_added',
+                            details: 'LINE公式アカウントを友だち追加してください'
+                        };
+                    }
+                }
+                
+                return { 
+                    success: false, 
+                    error: originalError.message || error.message,
+                    statusCode: originalError.statusCode,
+                    response: originalError.response?.data
+                };
+            }
+            
+            throw pushError;
+        }
 
     } catch (error) {
         console.error('[LINE] 通知送信エラー:', error);
         console.error('[LINE] エラー詳細:', {
             message: error.message,
             status: error.status,
+            statusCode: error.statusCode,
             statusText: error.statusText,
-            response: error.response?.data
+            response: error.response?.data || error.response?.body
         });
+        
         return { success: false, error: error.message };
     }
 }

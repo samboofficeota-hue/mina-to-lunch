@@ -58,7 +58,12 @@ LINE_LOGIN_REDIRECT_URI=https://mina-to-lunch.vercel.app/api/line-login-callback
    ```
    https://mina-to-lunch.vercel.app/api/line-login-callback
    ```
-4. **更新** ボタンをクリック
+4. **テスター追加**（開発中ステータスの場合）
+   - チャネルが「開発中」の場合、ログイン可能なユーザーをテスターとして追加する必要があります
+   - 「テスター」セクションで **テスター追加** をクリック
+   - LINE IDを入力するか、QRコードをスキャンして追加
+   - ⚠️ **重要**: テスターとして登録されていないユーザーはログインできません
+5. **更新** ボタンをクリック
 
 #### Webhook設定
 
@@ -107,14 +112,29 @@ https://mina-to-lunch.vercel.app/api/debug-env
 
 ## 🔍 トラブルシューティング
 
-### 400 Bad Request エラー
+### 400 Bad Request エラー - "This channel is now developing status"
 
-**原因**: LINE_CHANNEL_IDが正しく設定されていない
+**原因**: LINEログインチャネルが「開発中」ステータスで、ログインしようとしているユーザーがテスターとして登録されていない
+
+**解決方法**:
+1. **LINE Developers Console** で「みなとランチ (ログイン)」チャネルを開く
+2. **LINEログイン設定** タブを開く
+3. **テスター** セクションまでスクロール
+4. **テスター追加** をクリック
+5. ログインしたい **LINEユーザーのLINE ID** または **QRコード** をスキャンして追加
+6. 追加後、再度LINEログインを試す
+
+**重要**: 開発中ステータスのチャネルでは、テスターとして登録されたユーザーしかログインできません。
+
+### 400 Bad Request エラー - "Invalid client_id"
+
+**原因**: LINE_CHANNEL_IDが正しく設定されていない、または間違ったチャネルのIDを使用している
 
 **解決方法**:
 1. Vercelの環境変数で `LINE_CHANNEL_ID` を確認
-2. LINE Developers ConsoleでChannel IDを再確認
-3. 環境変数を再設定して再デプロイ
+2. LINE Developers Consoleで**ログインチャネル**（「みなとランチ (ログイン)」）のChannel IDを再確認
+3. **Messaging APIチャネル**のIDではなく、**ログインチャネル**のIDを使用していることを確認
+4. 環境変数を再設定して再デプロイ
 
 ### LINE通知が届かない
 

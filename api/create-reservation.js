@@ -128,6 +128,11 @@ export default async function handler(req, res) {
                     console.log('[create-reservation] LINE通知送信成功');
                 } else {
                     console.error('[create-reservation] LINE通知送信失敗:', lineResult);
+                    
+                    // 友だち追加が必要な場合のエラーログ
+                    if (lineResult.reason === 'friend_not_added') {
+                        console.warn('[create-reservation] LINE公式アカウントが友だち追加されていません。ユーザーに友だち追加を案内してください。');
+                    }
                 }
             } catch (lineError) {
                 console.error('[create-reservation] LINE通知送信エラー:', lineError);

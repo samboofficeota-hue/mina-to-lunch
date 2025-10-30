@@ -83,6 +83,7 @@ export async function handleLineLoginCallback(code, state, nonce) {
         console.log('[line-login-callback] Redirect URI:', redirectUri);
         
         // アクセストークンを取得
+        console.log('[line-login-callback] トークン取得開始');
         const tokenResponse = await fetch('https://api.line.me/oauth2/v2.1/token', {
             method: 'POST',
             headers: {
@@ -98,7 +99,13 @@ export async function handleLineLoginCallback(code, state, nonce) {
         });
         
         if (!tokenResponse.ok) {
-            throw new Error('トークン取得に失敗しました');
+            const errorText = await tokenResponse.text();
+            console.error('[line-login-callback] トークン取得エラー:', {
+                status: tokenResponse.status,
+                statusText: tokenResponse.statusText,
+                body: errorText
+            });
+            throw new Error(`トークン取得に失敗しました: ${tokenResponse.status} ${tokenResponse.statusText}`);
         }
         
         const tokenData = await tokenResponse.json();

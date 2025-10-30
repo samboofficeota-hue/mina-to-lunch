@@ -143,22 +143,61 @@ function checkLineConnection() {
         // セッションストレージから確認
         const storedLineUserId = sessionStorage.getItem('line_user_id');
         if (storedLineUserId) {
+            console.log('[main.js] 既存のLINE User IDを検出:', storedLineUserId);
             updateLineStatus(true);
+        } else {
+            console.log('[main.js] LINE未連携');
+            updateLineStatus(false);
         }
     }
 }
 
 // ===== LINE連携状態の表示更新 =====
 function updateLineStatus(isConnected) {
+    const lineConnectSection = document.getElementById('line-connect-section');
     const warningSection = document.getElementById('line-not-connected-warning');
     
-    if (isConnected && lineStatus && lineConnectButton) {
-        lineStatus.style.display = 'block';
-        lineConnectButton.style.display = 'none';
+    // セッションストレージからLINE情報を取得
+    const lineDisplayName = sessionStorage.getItem('line_display_name');
+    const linePictureUrl = sessionStorage.getItem('line_picture_url');
+    
+    if (isConnected && lineStatus) {
+        // LINE連携済み表示を更新
+        const statusBox = document.getElementById('line-status');
+        if (statusBox) {
+            statusBox.style.display = 'block';
+            
+            // ユーザー名とプロフィール画像を表示
+            const headerElement = statusBox.querySelector('.line-connected-header');
+            if (headerElement && lineDisplayName) {
+                let displayContent = `<i class="fab fa-line" style="font-size: 2rem; color: #06C755;"></i>`;
+                if (linePictureUrl) {
+                    displayContent += `<img src="${linePictureUrl}" alt="${lineDisplayName}" style="width: 50px; height: 50px; border-radius: 50%; margin: 10px; border: 2px solid #06C755;">`;
+                }
+                displayContent += `<h3 style="margin: 10px 0; color: #333;">✅ ${lineDisplayName} さんでログイン中</h3>`;
+                displayContent += `<p style="color: #666; font-size: 0.95rem; margin: 10px 0; line-height: 1.6;">予約完了後、自動的にLINE通知が届きます。</p>`;
+                headerElement.innerHTML = displayContent;
+            }
+        }
+        
+        // LINEログインボタンを非表示
+        if (lineConnectSection) {
+            lineConnectSection.style.display = 'none';
+        }
+        if (lineConnectButton) {
+            lineConnectButton.style.display = 'none';
+        }
         if (warningSection) {
             warningSection.style.display = 'none';
         }
     } else {
+        // LINE未連携表示
+        if (lineConnectSection) {
+            lineConnectSection.style.display = 'block';
+        }
+        if (lineStatus) {
+            lineStatus.style.display = 'none';
+        }
         if (warningSection) {
             warningSection.style.display = 'block';
         }
@@ -276,13 +315,18 @@ form.addEventListener('submit', async (e) => {
     
     // LINE User IDがあれば追加
     const lineUserId = sessionStorage.getItem('line_user_id');
+    const lineDisplayName = sessionStorage.getItem('line_display_name');
+    
     if (lineUserId) {
         formData.lineUserId = lineUserId;
-        console.log('LINE連携済み予約:', lineUserId);
-        console.log('送信データ:', formData);
+        console.log('[予約送信] LINE連携済み予約:', {
+            lineUserId: lineUserId,
+            lineDisplayName: lineDisplayName,
+            formData: formData
+        });
     } else {
-        console.log('LINE未連携での予約');
-        console.log('送信データ:', formData);
+        console.warn('[予約送信] LINE未連携での予約 - LINE通知は送信されません');
+        console.log('[予約送信] 送信データ:', formData);
     }
     
     // 送信ボタンを無効化
