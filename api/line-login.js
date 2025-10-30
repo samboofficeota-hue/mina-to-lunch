@@ -70,16 +70,31 @@ export async function handleLineLoginCallback(code, state, nonce) {
             throw new Error('LINE_CHANNEL_ID環境変数が設定されていません');
         }
         
-        // LINE_CHANNEL_SECRETは必須ではない（LINE Loginチャネルによっては存在しない場合がある）
-        if (!process.env.LINE_CHANNEL_SECRET) {
-            console.warn('[line-login-callback] LINE_CHANNEL_SECRETが設定されていません。LINE Loginチャネルにシークレットがない可能性があります。');
-        }
-        
         // 本番環境では固定ドメインを使用
         const redirectUri = process.env.LINE_LOGIN_REDIRECT_URI || 
             (process.env.NODE_ENV === 'production' 
                 ? 'https://mina-to-lunch.vercel.app/api/line-login-callback'
                 : `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/line-login-callback`);
+        
+        // LINE Loginチャネルでは通常、client_secretは不要
+        // もし設定されている場合は使用し、なければ省略
+        console.log('[line-login-callback] LINE_CHANNEL_SECRET設定状況:', !!process.env.LINE_CHANNEL_SECRET);
+        
+        // LINE Loginチャネルでclient_secretが不要な場合の対応
+        const requestBody = {
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: redirectUri,
+            client_id: process.env.LINE_CHANNEL_ID
+        };
+        
+        // client_secretが設定されている場合のみ追加
+        if (process.env.LINE_CHANNEL_SECRET) {
+            requestBody.client_secret = process.env.LINE_CHANNEL_SECRET;
+            console.log('[line-login-callback] client_secretを含めてリクエスト送信');
+        } else {
+            console.log('[line-login-callback] client_secretなしでリクエスト送信（LINE Loginチャネルでは通常不要）');
+        }
         
         console.log('[line-login-callback] Channel ID:', process.env.LINE_CHANNEL_ID);
         console.log('[line-login-callback] Redirect URI:', redirectUri);
@@ -91,13 +106,7 @@ export async function handleLineLoginCallback(code, state, nonce) {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: new URLSearchParams({
-                grant_type: 'authorization_code',
-                code: code,
-                redirect_uri: redirectUri,
-                client_id: process.env.LINE_CHANNEL_ID,
-                ...(process.env.LINE_CHANNEL_SECRET && { client_secret: process.env.LINE_CHANNEL_SECRET })
-            })
+            body: new URLSearchParams(requestBody)
         });
         
         if (!tokenResponse.ok) {
