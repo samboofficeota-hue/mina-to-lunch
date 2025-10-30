@@ -126,15 +126,35 @@ https://mina-to-lunch.vercel.app/api/debug-env
 
 **重要**: 開発中ステータスのチャネルでは、テスターとして登録されたユーザーしかログインできません。
 
-### 400 Bad Request エラー - "Invalid client_id"
+### 400 Bad Request エラー - "トークン取得に失敗しました"
 
-**原因**: LINE_CHANNEL_IDが正しく設定されていない、または間違ったチャネルのIDを使用している
+**原因**: LINE Loginのトークン交換時にエラーが発生
 
-**解決方法**:
-1. Vercelの環境変数で `LINE_CHANNEL_ID` を確認
-2. LINE Developers Consoleで**ログインチャネル**（「みなとランチ (ログイン)」）のChannel IDを再確認
-3. **Messaging APIチャネル**のIDではなく、**ログインチャネル**のIDを使用していることを確認
-4. 環境変数を再設定して再デプロイ
+**確認・解決方法**:
+
+1. **Redirect URIの一致を確認**
+   - LINE Developers Console → ログインチャネル → **LINEログイン設定**
+   - **コールバックURL** が以下と完全一致しているか確認：
+     ```
+     https://mina-to-lunch.vercel.app/api/line-login-callback
+     ```
+   - ⚠️ 末尾のスラッシュや余分な文字がないか確認
+
+2. **Channel IDの確認**
+   - Vercelの環境変数で `LINE_CHANNEL_ID` を確認
+   - LINE Developers Consoleで**ログインチャネル**（「みなとランチ (ログイン)」）のChannel IDと一致しているか確認
+   - **Messaging APIチャネル**のIDではなく、**ログインチャネル**のIDを使用
+
+3. **Channel Secretの確認**
+   - LINE Loginチャネルには通常、チャネルシークレットがありません
+   - もしLINE Loginチャネルにシークレットがない場合、`LINE_CHANNEL_SECRET`環境変数は空にしてください
+   - または、Messaging APIチャネルと統合されている場合は、Messaging APIチャネルのSecretを使用
+
+4. **Vercelログで詳細エラーを確認**
+   - Vercelのログに `[line-login-callback] トークン取得エラー詳細:` が出力されます
+   - `error_description` の内容を確認して、具体的なエラー原因を特定
+
+5. **環境変数を再設定して再デプロイ**
 
 ### LINE通知が届かない
 

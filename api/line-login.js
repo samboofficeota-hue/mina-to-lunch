@@ -69,8 +69,10 @@ export async function handleLineLoginCallback(code, state, nonce) {
         if (!process.env.LINE_CHANNEL_ID) {
             throw new Error('LINE_CHANNEL_ID環境変数が設定されていません');
         }
+        
+        // LINE_CHANNEL_SECRETは必須ではない（LINE Loginチャネルによっては存在しない場合がある）
         if (!process.env.LINE_CHANNEL_SECRET) {
-            throw new Error('LINE_CHANNEL_SECRET環境変数が設定されていません');
+            console.warn('[line-login-callback] LINE_CHANNEL_SECRETが設定されていません。LINE Loginチャネルにシークレットがない可能性があります。');
         }
         
         // 本番環境では固定ドメインを使用
@@ -94,18 +96,35 @@ export async function handleLineLoginCallback(code, state, nonce) {
                 code: code,
                 redirect_uri: redirectUri,
                 client_id: process.env.LINE_CHANNEL_ID,
-                client_secret: process.env.LINE_CHANNEL_SECRET
+                ...(process.env.LINE_CHANNEL_SECRET && { client_secret: process.env.LINE_CHANNEL_SECRET })
             })
         });
         
         if (!tokenResponse.ok) {
             const errorText = await tokenResponse.text();
-            console.error('[line-login-callback] トークン取得エラー:', {
+            let errorJson;
+            try {
+                errorJson = JSON.parse(errorText);
+            } catch (e) {
+                // JSONパース失敗時はそのまま使用
+            }
+            
+            console.error('[line-login-callback] トークン取得エラー詳細:', {
                 status: tokenResponse.status,
                 statusText: tokenResponse.statusText,
-                body: errorText
+                error_description: errorJson?.error_description || errorText,
+                error: errorJson?.error || 'unknown',
+                requestParams: {
+                    grant_type: 'authorization_code',
+                    code: code?.substring(0, 10) + '...',
+                    redirect_uri: redirectUri,
+                    client_id: process.env.LINE_CHANNEL_ID?.substring(0, 10) + '...',
+                    client_secret_set: !!process.env.LINE_CHANNEL_SECRET
+                }
             });
-            throw new Error(`トークン取得に失敗しました: ${tokenResponse.status} ${tokenResponse.statusText}`);
+            
+            const errorDescription = errorJson?.error_description || errorText || '不明なエラー';
+            throw new Error(`トークン取得に失敗しました: ${tokenResponse.status} ${errorDescription}`);
         }
         
         const tokenData = await tokenResponse.json();
